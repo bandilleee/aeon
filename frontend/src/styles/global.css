@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Base Styles */
+@layer base {
+  * {
+    @apply border-aeon-border;
+  }
+
+  body {
+    @apply bg-aeon-bg-primary text-aeon-text-primary antialiased;
+  }
+
+  /* Custom Scrollbar - Dark Theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-aeon-bg-secondary;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-aeon-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-aeon-text-muted;
+  }
+
+  /* Focus Styles */
+  :focus-visible {
+    @apply outline-none ring-2 ring-aeon-accent-primary ring-offset-2 ring-offset-aeon-bg-primary;
+  }
+}
+
+/* Component Layer */
+@layer components {
+  /* Glass Effect */
+  .glass {
+    @apply bg-aeon-bg-secondary/80 backdrop-blur-lg border border-aeon-border;
+  }
+
+  /* Card Styles */
+  .aeon-card {
+    @apply bg-aeon-bg-secondary border border-aeon-border rounded-xl p-6 shadow-aeon-sm;
+  }
+
+  .aeon-card-hover {
+    @apply aeon-card transition-all duration-200 hover:border-aeon-border-focus hover:shadow-aeon-glow;
+  }
+
+  /* Input Styles */
+  .aeon-input {
+    @apply w-full px-4 py-3 bg-aeon-bg-tertiary border border-aeon-border rounded-lg
+           text-aeon-text-primary placeholder: text-aeon-text-muted
+           focus:border-aeon-accent-primary focus:ring-1 focus:ring-aeon-accent-primary
+           transition-all duration-200;
+  }
+
+  /* Button Base */
+  .aeon-btn {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 
+           font-medium rounded-lg transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-offset-2 focus: ring-offset-aeon-bg-primary
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .aeon-btn-primary {
+    @apply aeon-btn bg-aeon-accent-primary text-white
+           hover:bg-aeon-accent-secondary focus:ring-aeon-accent-primary;
+  }
+
+  .aeon-btn-secondary {
+    @apply aeon-btn bg-aeon-bg-tertiary text-aeon-text-primary border border-aeon-border
+           hover: bg-aeon-bg-hover hover:border-aeon-text-muted focus:ring-aeon-border;
+  }
+
+  .aeon-btn-ghost {
+    @apply aeon-btn bg-transparent text-aeon-text-secondary
+           hover:bg-aeon-bg-tertiary hover:text-aeon-text-primary;
+  }
+
+  .aeon-btn-danger {
+    @apply aeon-btn bg-aeon-accent-danger text-white
+           hover:bg-red-600 focus:ring-aeon-accent-danger;
+  }
+
+  /* Badge Styles */
+  .aeon-badge {
+    @apply inline-flex items-center px-2. 5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .aeon-badge-success {
+    @apply aeon-badge bg-aeon-accent-success/20 text-aeon-accent-success;
+  }
+
+  .aeon-badge-warning {
+    @apply aeon-badge bg-aeon-accent-warning/20 text-aeon-accent-warning;
+  }
+
+  .aeon-badge-danger {
+    @apply aeon-badge bg-aeon-accent-danger/20 text-aeon-accent-danger;
+  }
+
+  .aeon-badge-info {
+    @apply aeon-badge bg-aeon-accent-info/20 text-aeon-accent-info;
+  }
+
+  /* Link Styles */
+  .aeon-link {
+    @apply text-aeon-accent-primary hover:text-aeon-accent-secondary 
+           underline-offset-4 hover:underline transition-colors;
+  }
+}
+
+/* Utility Layer */
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-aeon-accent-primary to-aeon-accent-secondary;
+  }
+
+  .border-gradient {
+    border-image: linear-gradient(to right, #6366f1, #8b5cf6) 1;
+  }
+}
