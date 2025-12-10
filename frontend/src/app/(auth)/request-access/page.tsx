@@ -1,9 +1,11 @@
-import React from 'react'
+import { Metadata } from "next";
+import { RequestAccessForm } from "@/components/forms/request-access-form";
 
-const access = () => {
-  return (
-    <div>access</div>
-  )
+export const metadata: Metadata = {
+  title: "Request Access - Aeon",
+  description: "Request access to join the Aeon platform",
+};
+
+export default function RequestAccessPage() {
+  return <RequestAccessForm />;
 }
-
-export default access

@@ -2,11 +2,6 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { AlertCircle, Eye, EyeOff } from "lucide-react";
 
-/**
- * Input Props
- * -----------
- * We extend native input props and add our custom ones
- */
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -16,15 +11,6 @@ export interface InputProps
   rightIcon?: React.ReactNode;
 }
 
-/**
- * Input Component
- * ---------------
- * A styled input field with support for: 
- * - Labels
- * - Error messages
- * - Hint text
- * - Icons on left/right
- */
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
     {
@@ -41,7 +27,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    // Generate a unique ID if not provided (needed for label association)
     const inputId = id || React.useId();
 
     return (
@@ -50,55 +35,55 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-aeon-text-primary mb-2"
+            className="block text-sm font-medium text-zinc-200 mb-2"
           >
             {label}
           </label>
         )}
 
-        {/* Input wrapper - needed for positioning icons */}
+        {/* Input wrapper */}
         <div className="relative">
           {/* Left icon */}
           {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-aeon-text-muted">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
               {leftIcon}
             </div>
           )}
 
-          {/* The actual input */}
+          {/* Input */}
           <input
             ref={ref}
             id={inputId}
             type={type}
             disabled={disabled}
             className={cn(
-              // Base styles
-              "w-full px-4 py-3 bg-aeon-bg-tertiary border rounded-lg",
-              "text-aeon-text-primary placeholder: text-aeon-text-muted",
+              // Base styles - DevMode style
+              "w-full px-3 py-2.5 bg-black/20 border rounded-md",
+              "text-sm text-zinc-300 placeholder:text-zinc-600",
               "transition-all duration-200",
               // Focus styles
-              "focus:outline-none focus:border-aeon-accent-primary focus:ring-1 focus:ring-aeon-accent-primary",
+              "focus:outline-none focus:border-white/20 focus:ring-1 focus:ring-white/10",
               // Disabled styles
               "disabled:opacity-50 disabled:cursor-not-allowed",
               // Error styles
               error
-                ? "border-aeon-accent-danger focus:border-aeon-accent-danger focus:ring-aeon-accent-danger"
-                : "border-aeon-border",
-              // Padding adjustments for icons
+                ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20"
+                : "border-white/10",
+              // Padding for icons
               leftIcon && "pl-10",
               rightIcon && "pr-10",
               className
             )}
-            aria-invalid={error ?  "true" : "false"}
+            aria-invalid={error ? "true" : "false"}
             aria-describedby={
               error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined
             }
-            {... props}
+            {...props}
           />
 
           {/* Right icon */}
           {rightIcon && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-aeon-text-muted">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500">
               {rightIcon}
             </div>
           )}
@@ -108,16 +93,16 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {error && (
           <p
             id={`${inputId}-error`}
-            className="mt-2 text-sm text-aeon-accent-danger flex items-center gap-1"
+            className="mt-2 text-xs text-red-400 flex items-center gap-1"
           >
-            <AlertCircle className="h-4 w-4" />
+            <AlertCircle className="h-3 w-3" />
             {error}
           </p>
         )}
 
-        {/* Hint text (only show if no error) */}
-        {hint && ! error && (
-          <p id={`${inputId}-hint`} className="mt-2 text-sm text-aeon-text-muted">
+        {/* Hint text */}
+        {hint && !error && (
+          <p id={`${inputId}-hint`} className="mt-2 text-xs text-zinc-600">
             {hint}
           </p>
         )}
@@ -129,16 +114,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 Input.displayName = "Input";
 
 /**
- * Password Input Component
- * ------------------------
- * Special input for passwords with show/hide toggle
- * This is a separate component because it has its own state
+ * Password Input with show/hide toggle
  */
 export interface PasswordInputProps extends Omit<InputProps, "type" | "rightIcon"> {}
 
 const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
   (props, ref) => {
-    // State to track if password is visible
     const [showPassword, setShowPassword] = React.useState(false);
 
     return (
@@ -149,18 +130,18 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="text-aeon-text-muted hover:text-aeon-text-primary transition-colors"
-            tabIndex={-1} // Prevent tab focus on this button
+            className="text-zinc-500 hover:text-zinc-300 transition-colors"
+            tabIndex={-1}
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
-            {showPassword ?  (
-              <EyeOff className="h-5 w-5" />
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" />
             ) : (
-              <Eye className="h-5 w-5" />
+              <Eye className="h-4 w-4" />
             )}
           </button>
         }
-        {... props}
+        {...props}
       />
     );
   }

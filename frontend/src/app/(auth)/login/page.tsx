@@ -1,9 +1,11 @@
-import React from 'react'
+import { Metadata } from "next";
+import { LoginForm } from "@/components/forms/login-form";
 
-const login = () => {
-  return (
-    <div>login</div>
-  )
+export const metadata: Metadata = {
+  title:  "Sign In - Aeon",
+  description: "Sign in to your Aeon account",
+};
+
+export default function LoginPage() {
+  return <LoginForm />;
 }
-
-export default login

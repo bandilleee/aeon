@@ -1,13 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-/**
- * Card Component
- * --------------
- * A container component for grouping related content. 
- * Used for login forms, dashboard widgets, etc.
- */
-
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "hover" | "glass";
 }
@@ -15,16 +8,16 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = "default", ...props }, ref) => {
     const variants = {
-      default: "bg-aeon-bg-secondary border border-aeon-border",
-      hover:  "bg-aeon-bg-secondary border border-aeon-border hover:border-aeon-border-focus hover:shadow-aeon-glow transition-all duration-200",
-      glass:  "bg-aeon-bg-secondary/80 backdrop-blur-lg border border-aeon-border",
+      default: "bg-zinc-900/30 border border-white/5",
+      hover: "bg-zinc-900/30 border border-white/5 hover:border-white/10 transition-all duration-200",
+      glass: "glass border border-white/5",
     };
 
     return (
       <div
         ref={ref}
         className={cn(
-          "rounded-xl shadow-aeon-sm",
+          "rounded-lg backdrop-blur-sm",
           variants[variant],
           className
         )}
@@ -36,14 +29,9 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
 
 Card.displayName = "Card";
 
-/**
- * Card Header
- * -----------
- * Container for card title and description
- */
 const CardHeader = React.forwardRef<
   HTMLDivElement,
-  React. HTMLAttributes<HTMLDivElement>
+  React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
@@ -54,11 +42,6 @@ const CardHeader = React.forwardRef<
 
 CardHeader.displayName = "CardHeader";
 
-/**
- * Card Title
- * ----------
- * The main heading of a card
- */
 const CardTitle = React.forwardRef<
   HTMLHeadingElement,
   React.HTMLAttributes<HTMLHeadingElement>
@@ -66,7 +49,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-xl font-semibold text-aeon-text-primary leading-none tracking-tight",
+      "text-lg font-medium text-zinc-200 tracking-tight",
       className
     )}
     {...props}
@@ -75,29 +58,19 @@ const CardTitle = React.forwardRef<
 
 CardTitle.displayName = "CardTitle";
 
-/**
- * Card Description
- * ----------------
- * Subtitle or description text
- */
 const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ... props }, ref) => (
+>(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-aeon-text-secondary", className)}
+    className={cn("text-sm text-zinc-500", className)}
     {...props}
   />
 ));
 
 CardDescription.displayName = "CardDescription";
 
-/**
- * Card Content
- * ------------
- * Main content area of the card
- */
 const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -107,11 +80,6 @@ const CardContent = React.forwardRef<
 
 CardContent.displayName = "CardContent";
 
-/**
- * Card Footer
- * -----------
- * Bottom area, typically for actions/buttons
- */
 const CardFooter = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
