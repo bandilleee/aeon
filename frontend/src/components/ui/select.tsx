@@ -10,13 +10,13 @@ export interface SelectOption {
 }
 
 export interface SelectProps
-  extends Omit<React. SelectHTMLAttributes<HTMLSelectElement>, "onChange"> {
-  label?:  string;
+  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "onChange"> {
+  label?: string;
   error?: string;
   hint?: string;
   options: SelectOption[];
   placeholder?: string;
-  onChange?:  (value: string) => void;
+  onChange?: (value: string) => void;
 }
 
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
@@ -38,7 +38,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     const selectId = id || React.useId();
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      onChange?.(e. target.value);
+      onChange?.(e.target.value);
     };
 
     return (
@@ -64,7 +64,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
               "w-full px-3 py-2.5 bg-black/20 border rounded-md appearance-none",
               "text-sm text-zinc-300",
               "transition-all duration-200",
-              "focus: outline-none focus: border-white/20 focus:ring-1 focus:ring-white/10",
+              "focus:outline-none focus:border-white/20 focus:ring-1 focus:ring-white/10",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               error
                 ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20"
@@ -78,7 +78,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             </option>
             {options.map((option) => (
               <option
-                key={option. value}
+                key={option.value}
                 value={option.value}
                 className="bg-zinc-900 text-zinc-300"
               >
@@ -97,7 +97,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         )}
 
         {/* Hint text */}
-        {hint && ! error && (
+        {hint && !error && (
           <p className="mt-2 text-xs text-zinc-600">{hint}</p>
         )}
       </div>

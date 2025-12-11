@@ -1,9 +1,18 @@
-import React from 'react'
+import { Metadata } from "next";
+import { EventCheckIn } from "@/components/events/event-check-in";
 
-const checkin = () => {
-  return (
-    <div>checkin</div>
-  )
+export const metadata: Metadata = {
+  title: "Event Check-in - Aeon",
+  description: "Check in event attendees",
+};
+
+interface CheckInPageProps {
+  params: Promise<{
+    eventId: string;
+  }>;
 }
 
-export default checkin
+export default async function CheckInPage({ params }: CheckInPageProps) {
+  const { eventId } = await params;
+  return <EventCheckIn eventId={eventId} />;
+}

@@ -284,7 +284,7 @@ export function Header({ onMobileMenuToggle, isMobileMenuOpen, isAdmin }: Header
                     </Link>
                     <Link
                       href="/dashboard/settings"
-                      className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-400 hover: text-zinc-200 hover: bg-white/5 rounded-md transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-400 hover:text-zinc-200 hover:bg-white/5 rounded-md transition-colors"
                       onClick={() => setShowUserMenu(false)}
                     >
                       <Settings className="h-4 w-4" />
@@ -293,7 +293,7 @@ export function Header({ onMobileMenuToggle, isMobileMenuOpen, isAdmin }: Header
                     {user.isAdmin && (
                       <Link
                         href="/admin"
-                        className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-400 hover: text-zinc-200 hover: bg-white/5 rounded-md transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-400 hover:text-zinc-200 hover:bg-white/5 rounded-md transition-colors"
                         onClick={() => setShowUserMenu(false)}
                       >
                         <Shield className="h-4 w-4" />

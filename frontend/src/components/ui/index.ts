@@ -17,3 +17,8 @@ export * from "./input";
 export * from "./card";
 export * from "./checkbox";
 export * from "./welcome-loader";
+export * from "./select";
+export * from "./textarea";
+export * from "./badge";
+export * from "./modal";
+export * from "./switch";

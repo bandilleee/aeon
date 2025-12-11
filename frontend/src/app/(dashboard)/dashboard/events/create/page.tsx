@@ -1,9 +1,11 @@
-import React from 'react'
+import { Metadata } from "next";
+import { CreateEventForm } from "@/components/events/create-event-form";
 
-const create = () => {
-  return (
-    <div>create</div>
-  )
+export const metadata: Metadata = {
+  title:  "Create Event - Aeon",
+  description: "Create a new event",
+};
+
+export default function CreateEventPage() {
+  return <CreateEventForm />;
 }
-
-export default create

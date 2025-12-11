@@ -125,3 +125,41 @@ export const profileUpdateSchema = z.object({
 });
 
 export type ProfileUpdateFormData = z.infer<typeof profileUpdateSchema>;
+
+/**
+ * Create Event Schema
+ */
+export const createEventSchema = z.object({
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .min(3, "Title must be at least 3 characters")
+    .max(100, "Title must be less than 100 characters"),
+  description: z
+    .string()
+    .min(1, "Description is required")
+    .min(20, "Description must be at least 20 characters")
+    .max(2000, "Description must be less than 2000 characters"),
+  category: z.enum(["meeting", "workshop", "social", "training", "conference", "other"], {
+    message: "Please select a category",
+  }),
+  startDate: z.string().min(1, "Start date is required"),
+  startTime: z.string().min(1, "Start time is required"),
+  endDate: z.string().min(1, "End date is required"),
+  endTime: z.string().min(1, "End time is required"),
+  isVirtual: z.boolean(),
+  location: z.string().optional(),
+  virtualLink: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
+  visibility: z.enum(["public", "members_only", "invite_only"], {
+    message: "Please select visibility",
+  }),
+  maxAttendees: z
+    .number()
+    .min(1, "Must have at least 1 attendee")
+    .max(10000, "Maximum 10,000 attendees")
+    .optional()
+    .nullable(),
+  requiresRegistration: z.boolean(),
+});
+
+export type CreateEventFormData = z.infer<typeof createEventSchema>;
