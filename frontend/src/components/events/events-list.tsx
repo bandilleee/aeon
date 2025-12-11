@@ -10,14 +10,40 @@ import {
   MapPin,
   Video,
   Users,
-  MoreHorizontal,
   ChevronRight,
   Clock,
+  X,
 } from "lucide-react";
-import { Button, Badge, Card, CardContent } from "@/components/ui";
+import { Button, Badge, Card, CardContent, Select } from "@/components/ui";
 import { mockEvents, getEventStatusBadge, getEventCategoryBadge } from "@/lib/mock-data";
 import { Event, EventStatus, EventCategory } from "@/types/event.types";
 import { cn } from "@/lib/utils";
+
+/**
+ * Status filter options
+ */
+const statusOptions = [
+  { value: "all", label: "All Statuses" },
+  { value: "draft", label: "Draft" },
+  { value: "pending_approval", label: "Pending Approval" },
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
+  { value: "cancelled", label: "Cancelled" },
+  { value: "completed", label: "Completed" },
+];
+
+/**
+ * Category filter options
+ */
+const categoryOptions = [
+  { value: "all", label: "All Categories" },
+  { value: "meeting", label: "Meeting" },
+  { value: "workshop", label: "Workshop" },
+  { value: "social", label: "Social" },
+  { value: "training", label: "Training" },
+  { value: "conference", label: "Conference" },
+  { value: "other", label: "Other" },
+];
 
 /**
  * Format date for display
@@ -37,7 +63,7 @@ function formatEventDate(dateString: string): string {
 function formatEventTime(startDate: string, endDate: string): string {
   const start = new Date(startDate);
   const end = new Date(endDate);
-  
+
   const timeFormat: Intl.DateTimeFormatOptions = {
     hour: "numeric",
     minute: "2-digit",
@@ -94,7 +120,7 @@ function EventCard({ event }: { event: Event }) {
                   <Clock className="h-3 w-3" />
                   <span>{formatEventTime(event.startDate, event.endDate)}</span>
                 </div>
-                
+
                 {event.location && (
                   <div className="flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
@@ -156,8 +182,8 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
  */
 export function EventsList() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("all");
-  const [categoryFilter, setCategoryFilter] = useState<EventCategory | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
 
   // Filter events
@@ -202,6 +228,13 @@ export function EventsList() {
   }, [filteredEvents]);
 
   const hasFilters = Boolean(searchQuery || statusFilter !== "all" || categoryFilter !== "all");
+  const activeFilterCount = (statusFilter !== "all" ? 1 : 0) + (categoryFilter !== "all" ? 1 : 0);
+
+  const clearFilters = () => {
+    setStatusFilter("all");
+    setCategoryFilter("all");
+    setSearchQuery("");
+  };
 
   return (
     <div className="p-4 md:p-8 space-y-6">
@@ -235,6 +268,14 @@ export function EventsList() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-zinc-900/50 border border-white/5 text-sm text-zinc-300 rounded-md pl-10 pr-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all placeholder:text-zinc-600"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
 
         {/* Filter Toggle */}
@@ -245,9 +286,9 @@ export function EventsList() {
         >
           <Filter className="h-4 w-4 mr-2" />
           Filters
-          {hasFilters && (
+          {activeFilterCount > 0 && (
             <span className="ml-2 w-5 h-5 bg-white text-black text-xs font-medium rounded-full flex items-center justify-center">
-              {(statusFilter !== "all" ? 1 : 0) + (categoryFilter !== "all" ? 1 : 0)}
+              {activeFilterCount}
             </span>
           )}
         </Button>
@@ -257,55 +298,35 @@ export function EventsList() {
       {showFilters && (
         <Card className="animate-slide-up">
           <CardContent className="p-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
               {/* Status Filter */}
-              <div>
-                <label className="block text-xs text-zinc-500 mb-2">Status</label>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as EventStatus | "all")}
-                  className="w-full bg-black/20 border border-white/10 text-sm text-zinc-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-white/20"
-                >
-                  <option value="all">All Statuses</option>
-                  <option value="draft">Draft</option>
-                  <option value="pending_approval">Pending Approval</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="cancelled">Cancelled</option>
-                  <option value="completed">Completed</option>
-                </select>
-              </div>
+              <Select
+                label="Status"
+                placeholder="Select status"
+                options={statusOptions}
+                value={statusFilter}
+                onChange={(value) => setStatusFilter(value)}
+              />
 
               {/* Category Filter */}
-              <div>
-                <label className="block text-xs text-zinc-500 mb-2">Category</label>
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value as EventCategory | "all")}
-                  className="w-full bg-black/20 border border-white/10 text-sm text-zinc-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-white/20"
-                >
-                  <option value="all">All Categories</option>
-                  <option value="meeting">Meeting</option>
-                  <option value="workshop">Workshop</option>
-                  <option value="social">Social</option>
-                  <option value="training">Training</option>
-                  <option value="conference">Conference</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
+              <Select
+                label="Category"
+                placeholder="Select category"
+                options={categoryOptions}
+                value={categoryFilter}
+                onChange={(value) => setCategoryFilter(value)}
+              />
 
               {/* Clear Filters */}
               <div className="flex items-end">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    setStatusFilter("all");
-                    setCategoryFilter("all");
-                    setSearchQuery("");
-                  }}
+                  onClick={clearFilters}
                   className="text-zinc-500"
+                  disabled={!hasFilters}
                 >
+                  <X className="h-4 w-4 mr-1" />
                   Clear filters
                 </Button>
               </div>
@@ -319,6 +340,30 @@ export function EventsList() {
         <p className="text-sm text-zinc-500">
           {filteredEvents.length} event{filteredEvents.length !== 1 ? "s" : ""} found
         </p>
+        
+        {/* Active filters pills */}
+        {hasFilters && (
+          <div className="flex items-center gap-2">
+            {statusFilter !== "all" && (
+              <button
+                onClick={() => setStatusFilter("all")}
+                className="inline-flex items-center gap-1 px-2 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-zinc-400 hover:bg-white/10 transition-colors"
+              >
+                {statusOptions.find((s) => s.value === statusFilter)?.label}
+                <X className="h-3 w-3" />
+              </button>
+            )}
+            {categoryFilter !== "all" && (
+              <button
+                onClick={() => setCategoryFilter("all")}
+                className="inline-flex items-center gap-1 px-2 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-zinc-400 hover:bg-white/10 transition-colors"
+              >
+                {categoryOptions.find((c) => c.value === categoryFilter)?.label}
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Events List */}

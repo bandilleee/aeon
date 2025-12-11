@@ -14,11 +14,11 @@ import {
   Trash2,
   UserCheck,
   Share2,
-  MoreHorizontal,
   ExternalLink,
   CheckCircle,
   XCircle,
   AlertTriangle,
+  UserMinus,
 } from "lucide-react";
 
 import {
@@ -37,6 +37,7 @@ import {
   getEventCategoryBadge,
 } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { EventAttendee } from "@/types/event.types";
 
 interface EventDetailsProps {
   eventId: string;
@@ -89,8 +90,13 @@ function getDuration(startDate: string, endDate: string): string {
 export function EventDetails({ eventId }: EventDetailsProps) {
   const router = useRouter();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showCancelRegistrationModal, setShowCancelRegistrationModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  
+  // Local state for registration status (in real app, this would come from API)
+  const [localIsRegistered, setLocalIsRegistered] = useState(false);
 
   // Find the event
   const event = useMemo(() => {
@@ -98,21 +104,23 @@ export function EventDetails({ eventId }: EventDetailsProps) {
   }, [eventId]);
 
   // Get attendees for this event
-  const attendees = useMemo(() => {
-    return mockAttendees.filter((a) => a.eventId === eventId);
-  }, [eventId]);
+  const [attendees, setAttendees] = useState<EventAttendee[]>(() => 
+    mockAttendees.filter((a) => a.eventId === eventId)
+  );
 
   // Mock current user
   const currentUser = {
     id: "user_1",
     displayName: "Jane Doe",
+    email: "jane@example.com",
+    initials: "JD",
   };
 
   // Check if current user is the creator
   const isCreator = event?.createdBy === currentUser.id;
 
-  // Check if user is registered
-  const isRegistered = attendees.some((a) => a.userId === currentUser.id);
+  // Check if user is registered (from attendees list or local state)
+  const isRegistered = localIsRegistered || attendees.some((a) => a.userId === currentUser.id);
 
   if (!event) {
     return (
@@ -169,11 +177,79 @@ export function EventDetails({ eventId }: EventDetailsProps) {
       console.log("Registering for event:", eventId);
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Would refresh attendees list here
+      // Add current user to attendees list
+      const newAttendee: EventAttendee = {
+        id: `att_${Date.now()}`,
+        eventId: eventId,
+        userId: currentUser.id,
+        user: {
+          id: currentUser.id,
+          displayName: currentUser.displayName,
+          email: currentUser.email,
+          initials: currentUser.initials,
+        },
+        status: "registered",
+        registeredAt: new Date().toISOString(),
+      };
+
+      setAttendees((prev) => [...prev, newAttendee]);
+      setLocalIsRegistered(true);
+
     } catch (error) {
       console.error("Failed to register:", error);
     } finally {
       setIsRegistering(false);
+    }
+  };
+
+  /**
+   * Handle cancel registration
+   */
+  const handleCancelRegistration = async () => {
+    try {
+      setIsCancelling(true);
+
+      // TODO: Replace with actual API call
+      console.log("Cancelling registration for event:", eventId);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Remove current user from attendees list
+      setAttendees((prev) => prev.filter((a) => a.userId !== currentUser.id));
+      setLocalIsRegistered(false);
+      setShowCancelRegistrationModal(false);
+
+    } catch (error) {
+      console.error("Failed to cancel registration:", error);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  /**
+   * Handle share event
+   */
+  const handleShare = async () => {
+    const url = window.location.href;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: event.title,
+          text: event.description.slice(0, 100) + "...",
+          url: url,
+        });
+      } catch (error) {
+        // User cancelled or error
+        console.log("Share cancelled or failed");
+      }
+    } else {
+      // Fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(url);
+        alert("Link copied to clipboard!");
+      } catch (error) {
+        console.error("Failed to copy:", error);
+      }
     }
   };
 
@@ -212,7 +288,7 @@ export function EventDetails({ eventId }: EventDetailsProps) {
 
               {/* Creator info */}
               <div className="flex items-center gap-2 mt-3">
-                <div className="w-6 h-6 rounded-full bg-linear-to-tr from-zinc-700 to-zinc-500 flex items-center justify-center text-[8px] text-white font-bold border border-white/10">
+                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-zinc-700 to-zinc-500 flex items-center justify-center text-[8px] text-white font-bold border border-white/10">
                   {event.createdByUser.initials}
                 </div>
                 <span className="text-sm text-zinc-500">
@@ -225,17 +301,32 @@ export function EventDetails({ eventId }: EventDetailsProps) {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2">
-              {event.status === "approved" && !isRegistered && event.requiresRegistration && (
-                <Button
-                  onClick={handleRegister}
-                  isLoading={isRegistering}
-                  leftIcon={<UserCheck className="h-4 w-4" />}
-                >
-                  Register
-                </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Registration Button - Only show for approved events */}
+              {event.status === "approved" && event.requiresRegistration && (
+                <>
+                  {isRegistered ? (
+                    <Button
+                      variant="secondary"
+                      onClick={() => setShowCancelRegistrationModal(true)}
+                      leftIcon={<UserMinus className="h-4 w-4" />}
+                      className="text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
+                    >
+                      Cancel Registration
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleRegister}
+                      isLoading={isRegistering}
+                      leftIcon={<UserCheck className="h-4 w-4" />}
+                    >
+                      Register
+                    </Button>
+                  )}
+                </>
               )}
 
+              {/* Registered Badge */}
               {isRegistered && (
                 <Badge variant="success" className="px-3 py-1.5">
                   <CheckCircle className="h-3 w-3 mr-1" />
@@ -243,6 +334,7 @@ export function EventDetails({ eventId }: EventDetailsProps) {
                 </Badge>
               )}
 
+              {/* Creator Actions */}
               {isCreator && (
                 <>
                   <Link href={`/dashboard/events/${eventId}/check-in`}>
@@ -294,7 +386,7 @@ export function EventDetails({ eventId }: EventDetailsProps) {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle>
-                      Attendees ({event.currentAttendees}
+                      Attendees ({attendees.length}
                       {event.maxAttendees && ` / ${event.maxAttendees}`})
                     </CardTitle>
                     {isCreator && (
@@ -320,12 +412,15 @@ export function EventDetails({ eventId }: EventDetailsProps) {
                           className="flex items-center justify-between p-3 bg-zinc-900/50 border border-white/5 rounded-lg"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-linear-to-tr from-zinc-700 to-zinc-500 flex items-center justify-center text-[10px] text-white font-bold border border-white/10">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-zinc-700 to-zinc-500 flex items-center justify-center text-[10px] text-white font-bold border border-white/10">
                               {attendee.user.initials}
                             </div>
                             <div>
                               <p className="text-sm text-zinc-200">
                                 {attendee.user.displayName}
+                                {attendee.userId === currentUser.id && (
+                                  <span className="text-zinc-500 ml-1">(You)</span>
+                                )}
                               </p>
                               <p className="text-xs text-zinc-600">
                                 {attendee.user.email}
@@ -334,7 +429,7 @@ export function EventDetails({ eventId }: EventDetailsProps) {
                           </div>
                           <Badge
                             variant={
-                              attendee.status === "checked_in"
+                              attendee. status === "checked_in"
                                 ? "success"
                                 :  attendee.status === "cancelled"
                                 ?  "danger"
@@ -343,9 +438,9 @@ export function EventDetails({ eventId }: EventDetailsProps) {
                           >
                             {attendee.status === "checked_in"
                               ? "Checked In"
-                              :  attendee.status === "cancelled"
-                              ? "Cancelled"
-                              :  "Registered"}
+                              : attendee.status === "cancelled"
+                              ?  "Cancelled"
+                              : "Registered"}
                           </Badge>
                         </div>
                       ))}
@@ -381,7 +476,7 @@ export function EventDetails({ eventId }: EventDetailsProps) {
                         {formatFullDate(event.startDate)}
                       </p>
                       <p className="text-xs text-zinc-500">
-                        {formatTime(event. startDate)} -{" "}
+                        {formatTime(event.startDate)} -{" "}
                         {formatTime(event.endDate)}
                       </p>
                     </div>
@@ -413,7 +508,7 @@ export function EventDetails({ eventId }: EventDetailsProps) {
                       <p className="text-sm text-zinc-200">
                         {event. isVirtual ? "Virtual Event" : "Location"}
                       </p>
-                      {event.isVirtual ? (
+                      {event.isVirtual ?  (
                         event.virtualLink && (
                           <a
                             href={event.virtualLink}
@@ -440,11 +535,14 @@ export function EventDetails({ eventId }: EventDetailsProps) {
                       <div>
                         <p className="text-sm text-zinc-200">Attendees</p>
                         <p className="text-xs text-zinc-500">
-                          {event.currentAttendees}
+                          {attendees.length}
                           {event.maxAttendees
                             ? ` / ${event.maxAttendees} spots`
                             : " registered"}
                         </p>
+                        {event.maxAttendees && attendees.length >= event.maxAttendees && (
+                          <p className="text-xs text-amber-500 mt-1">Event is full</p>
+                        )}
                       </div>
                     </div>
                   )}
@@ -455,7 +553,11 @@ export function EventDetails({ eventId }: EventDetailsProps) {
             {/* Share */}
             <Card>
               <CardContent className="p-4">
-                <Button variant="secondary" className="w-full">
+                <Button 
+                  variant="secondary" 
+                  className="w-full"
+                  onClick={handleShare}
+                >
                   <Share2 className="h-4 w-4 mr-2" />
                   Share Event
                 </Button>
@@ -467,7 +569,7 @@ export function EventDetails({ eventId }: EventDetailsProps) {
               <Card className="bg-red-500/5 border-red-500/20">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
-                    <XCircle className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
+                    <XCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="text-sm text-red-400 font-medium mb-1">
                         Event Rejected
@@ -495,6 +597,19 @@ export function EventDetails({ eventId }: EventDetailsProps) {
         cancelText="Cancel"
         variant="danger"
         isLoading={isDeleting}
+      />
+
+      {/* Cancel Registration Modal */}
+      <ConfirmationModal
+        isOpen={showCancelRegistrationModal}
+        onClose={() => setShowCancelRegistrationModal(false)}
+        onConfirm={handleCancelRegistration}
+        title="Cancel Registration?"
+        description="Are you sure you want to cancel your registration for this event? You can register again later if spots are available."
+        confirmText="Cancel Registration"
+        cancelText="Go Back"
+        variant="warning"
+        isLoading={isCancelling}
       />
     </>
   );

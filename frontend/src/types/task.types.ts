@@ -1,45 +1,12 @@
 /**
- * Task priority levels
- */
-export type TaskPriority = "low" | "medium" | "high" | "urgent";
-
-/**
  * Task status
  */
-export type TaskStatus = "todo" | "in_progress" | "in_review" | "completed" | "cancelled";
+export type TaskStatus = "todo" | "in_progress" | "in_review" | "completed";
 
 /**
- * Task information
+ * Task priority
  */
-export interface Task {
-  id: string;
-  title: string;
-  description?:  string;
-  status: TaskStatus;
-  priority: TaskPriority;
-  dueDate?: string;
-  
-  // Creator (only they can delete)
-  createdBy: string;
-  createdByUser?: {
-    id: string;
-    displayName: string;
-    avatarUrl?: string;
-  };
-  
-  // Collaborators
-  collaborators: TaskCollaborator[];
-  
-  // Additional metadata
-  tags?:  string[];
-  attachments?: TaskAttachment[];
-  comments?: TaskComment[];
-  
-  // Timestamps
-  createdAt: string;
-  updatedAt:  string;
-  completedAt?: string;
-}
+export type TaskPriority = "low" | "medium" | "high" | "urgent";
 
 /**
  * Task collaborator
@@ -52,40 +19,64 @@ export interface TaskCollaborator {
     displayName: string;
     email: string;
     avatarUrl?: string;
+    initials: string;
   };
   role: "assignee" | "reviewer" | "observer";
-  addedAt: string;
-  addedBy:  string;
-}
-
-/**
- * Task attachment
- */
-export interface TaskAttachment {
-  id:  string;
-  fileName: string;
-  fileUrl: string;
-  fileSize: number;
-  mimeType: string;
-  uploadedBy: string;
-  uploadedAt: string;
+  assignedAt: string;
 }
 
 /**
  * Task comment
  */
 export interface TaskComment {
-  id:  string;
-  content: string;
-  authorId: string;
-  author: {
+  id: string;
+  taskId: string;
+  userId: string;
+  user: {
     id: string;
     displayName: string;
     avatarUrl?: string;
+    initials: string;
   };
+  content: string;
   createdAt: string;
-  updatedAt?:  string;
-  isEdited: boolean;
+  updatedAt?: string;
+}
+
+/**
+ * Task information
+ */
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  dueDate?: string;
+  
+  // Creator information
+  createdBy: string;
+  createdByUser: {
+    id: string;
+    displayName: string;
+    avatarUrl?: string;
+    initials: string;
+  };
+
+  // Collaborators
+  collaborators: TaskCollaborator[];
+
+  // Related event (optional)
+  eventId?: string;
+  eventTitle?: string;
+
+  // Comments count
+  commentsCount: number;
+
+  // Timestamps
+  createdAt: string;
+  updatedAt: string;
+  completedAt?: string;
 }
 
 /**
@@ -93,9 +84,20 @@ export interface TaskComment {
  */
 export interface CreateTaskData {
   title: string;
-  description?: string;
+  description: string;
+  status: TaskStatus;
   priority: TaskPriority;
   dueDate?: string;
-  collaboratorIds?: string[];
-  tags?: string[];
+  collaboratorIds: string[];
+  eventId?: string;
+}
+
+/**
+ * Task filters
+ */
+export interface TaskFilters {
+  search?: string;
+  status?: TaskStatus | "all";
+  priority?: TaskPriority | "all";
+  assignee?: string | "all";
 }

@@ -1,4 +1,5 @@
 import { Event, EventAttendee } from "@/types/event.types";
+import { Task, TaskComment, TaskStatus, TaskPriority } from "@/types/task.types";
 
 /**
  * Mock events data
@@ -233,4 +234,324 @@ export function getEventCategoryBadge(category: Event["category"]): {
   };
 
   return categoryConfig[category];
+}
+
+
+/**
+ * Mock users for collaborators
+ */
+export const mockUsers = [
+  {
+    id: "user_1",
+    displayName: "Jane Doe",
+    email: "jane@example.com",
+    initials: "JD",
+  },
+  {
+    id: "user_2",
+    displayName: "John Smith",
+    email: "john@example.com",
+    initials: "JS",
+  },
+  {
+    id: "user_3",
+    displayName: "Sarah Johnson",
+    email: "sarah@example.com",
+    initials: "SJ",
+  },
+  {
+    id: "user_4",
+    displayName: "Mike Wilson",
+    email: "mike@example.com",
+    initials: "MW",
+  },
+  {
+    id: "user_5",
+    displayName: "Emily Davis",
+    email: "emily@example.com",
+    initials: "ED",
+  },
+];
+
+/**
+ * Mock tasks data
+ */
+export const mockTasks: Task[] = [
+  {
+    id: "task_1",
+    title: "Update event registration system",
+    description: "Implement the new registration flow with email confirmations and QR code generation for check-in. Need to integrate with the existing event management system.",
+    status: "in_progress",
+    priority: "high",
+    dueDate: "2024-12-20T23:59:59Z",
+    createdBy: "user_1",
+    createdByUser: {
+      id: "user_1",
+      displayName: "Jane Doe",
+      initials: "JD",
+    },
+    collaborators: [
+      {
+        id: "collab_1",
+        userId: "user_2",
+        user: {
+          id: "user_2",
+          displayName: "John Smith",
+          email: "john@example.com",
+          initials: "JS",
+        },
+        role: "assignee",
+        assignedAt: "2024-12-01T10:00:00Z",
+      },
+      {
+        id: "collab_2",
+        userId: "user_3",
+        user: {
+          id: "user_3",
+          displayName: "Sarah Johnson",
+          email: "sarah@example.com",
+          initials: "SJ",
+        },
+        role: "reviewer",
+        assignedAt: "2024-12-01T10:00:00Z",
+      },
+    ],
+    commentsCount: 5,
+    createdAt: "2024-12-01T09:00:00Z",
+    updatedAt: "2024-12-10T14:30:00Z",
+  },
+  {
+    id: "task_2",
+    title: "Design community newsletter template",
+    description: "Create a modern, responsive email template for the monthly community newsletter. Should include sections for upcoming events, member spotlights, and announcements.",
+    status: "todo",
+    priority: "medium",
+    dueDate: "2024-12-25T23:59:59Z",
+    createdBy: "user_1",
+    createdByUser: {
+      id: "user_1",
+      displayName: "Jane Doe",
+      initials: "JD",
+    },
+    collaborators: [
+      {
+        id: "collab_3",
+        userId: "user_4",
+        user: {
+          id: "user_4",
+          displayName: "Mike Wilson",
+          email: "mike@example.com",
+          initials: "MW",
+        },
+        role: "assignee",
+        assignedAt: "2024-12-05T09:00:00Z",
+      },
+    ],
+    commentsCount: 2,
+    createdAt: "2024-12-05T09:00:00Z",
+    updatedAt: "2024-12-05T09:00:00Z",
+  },
+  {
+    id: "task_3",
+    title: "Review membership applications",
+    description: "Go through the pending membership applications and verify the information provided. Approve or reject based on community guidelines.",
+    status: "in_review",
+    priority: "urgent",
+    dueDate: "2024-12-15T23:59:59Z",
+    createdBy: "user_2",
+    createdByUser: {
+      id: "user_2",
+      displayName: "John Smith",
+      initials: "JS",
+    },
+    collaborators: [
+      {
+        id: "collab_4",
+        userId: "user_1",
+        user: {
+          id: "user_1",
+          displayName: "Jane Doe",
+          email: "jane@example.com",
+          initials: "JD",
+        },
+        role: "reviewer",
+        assignedAt: "2024-12-08T11:00:00Z",
+      },
+    ],
+    eventId: "evt_1",
+    eventTitle: "Team Building Workshop",
+    commentsCount: 8,
+    createdAt: "2024-12-08T11:00:00Z",
+    updatedAt: "2024-12-11T16:00:00Z",
+  },
+  {
+    id: "task_4",
+    title: "Prepare year-end report",
+    description: "Compile all community metrics, event attendance, membership growth, and engagement statistics for the annual report presentation.",
+    status: "todo",
+    priority: "high",
+    dueDate: "2024-12-30T23:59:59Z",
+    createdBy: "user_1",
+    createdByUser: {
+      id: "user_1",
+      displayName: "Jane Doe",
+      initials: "JD",
+    },
+    collaborators: [
+      {
+        id: "collab_5",
+        userId: "user_3",
+        user: {
+          id: "user_3",
+          displayName: "Sarah Johnson",
+          email: "sarah@example.com",
+          initials: "SJ",
+        },
+        role: "assignee",
+        assignedAt: "2024-12-10T08:00:00Z",
+      },
+      {
+        id: "collab_6",
+        userId: "user_5",
+        user: {
+          id: "user_5",
+          displayName: "Emily Davis",
+          email: "emily@example.com",
+          initials: "ED",
+        },
+        role: "assignee",
+        assignedAt: "2024-12-10T08:00:00Z",
+      },
+    ],
+    commentsCount: 0,
+    createdAt: "2024-12-10T08:00:00Z",
+    updatedAt: "2024-12-10T08:00:00Z",
+  },
+  {
+    id: "task_5",
+    title: "Set up social media automation",
+    description: "Configure Buffer or Hootsuite for automated posting of event announcements and community updates across all social media platforms.",
+    status: "completed",
+    priority: "low",
+    createdBy: "user_3",
+    createdByUser: {
+      id: "user_3",
+      displayName: "Sarah Johnson",
+      initials: "SJ",
+    },
+    collaborators: [],
+    commentsCount: 3,
+    createdAt: "2024-11-20T10:00:00Z",
+    updatedAt: "2024-12-05T15:00:00Z",
+    completedAt: "2024-12-05T15:00:00Z",
+  },
+  {
+    id: "task_6",
+    title: "Organize volunteer training session",
+    description: "Plan and execute a training session for new volunteers covering event management, member engagement, and community guidelines.",
+    status: "in_progress",
+    priority: "medium",
+    dueDate: "2024-12-18T23:59:59Z",
+    createdBy: "user_2",
+    createdByUser: {
+      id: "user_2",
+      displayName: "John Smith",
+      initials: "JS",
+    },
+    collaborators: [
+      {
+        id: "collab_7",
+        userId: "user_4",
+        user: {
+          id: "user_4",
+          displayName: "Mike Wilson",
+          email: "mike@example.com",
+          initials: "MW",
+        },
+        role: "assignee",
+        assignedAt: "2024-12-02T14:00:00Z",
+      },
+    ],
+    eventId: "evt_2",
+    eventTitle: "Monthly Community Meetup",
+    commentsCount: 4,
+    createdAt: "2024-12-02T14:00:00Z",
+    updatedAt: "2024-12-09T11:00:00Z",
+  },
+];
+
+/**
+ * Mock task comments
+ */
+export const mockTaskComments: TaskComment[] = [
+  {
+    id: "comment_1",
+    taskId: "task_1",
+    userId: "user_2",
+    user: {
+      id: "user_2",
+      displayName: "John Smith",
+      initials: "JS",
+    },
+    content: "I've started working on the email confirmation flow. Should have a draft ready by tomorrow.",
+    createdAt: "2024-12-02T10:00:00Z",
+  },
+  {
+    id: "comment_2",
+    taskId: "task_1",
+    userId: "user_1",
+    user: {
+      id: "user_1",
+      displayName: "Jane Doe",
+      initials: "JD",
+    },
+    content: "Great! Make sure to include the event details in the confirmation email.",
+    createdAt: "2024-12-02T11:30:00Z",
+  },
+  {
+    id: "comment_3",
+    taskId: "task_1",
+    userId: "user_3",
+    user: {
+      id: "user_3",
+      displayName: "Sarah Johnson",
+      initials: "SJ",
+    },
+    content: "I'll review the QR code implementation once it's ready.",
+    createdAt: "2024-12-03T09:00:00Z",
+  },
+];
+
+/**
+ * Get task status badge
+ */
+export function getTaskStatusBadge(status: TaskStatus): {
+  variant: "success" | "warning" | "info" | "neutral";
+  label: string;
+} {
+  const statusConfig = {
+    todo: { variant: "neutral" as const, label: "To Do" },
+    in_progress: { variant: "info" as const, label: "In Progress" },
+    in_review: { variant: "warning" as const, label: "In Review" },
+    completed: { variant: "success" as const, label: "Completed" },
+  };
+
+  return statusConfig[status];
+}
+
+/**
+ * Get task priority badge
+ */
+export function getTaskPriorityBadge(priority: TaskPriority): {
+  variant: "success" | "warning" | "danger" | "neutral";
+  label: string;
+} {
+  const priorityConfig = {
+    low: { variant: "neutral" as const, label: "Low" },
+    medium: { variant: "success" as const, label: "Medium" },
+    high: { variant: "warning" as const, label: "High" },
+    urgent: { variant: "danger" as const, label: "Urgent" },
+  };
+
+  return priorityConfig[priority];
 }
