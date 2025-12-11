@@ -1,9 +1,11 @@
-import React from 'react'
+import { Metadata } from "next";
+import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
 
-const dashboard = () => {
-  return (
-    <div>dashboard</div>
-  )
+export const metadata: Metadata = {
+  title: "Dashboard - Aeon",
+  description: "Your Aeon dashboard overview",
+};
+
+export default function DashboardPage() {
+  return <DashboardOverview />;
 }
-
-export default dashboard

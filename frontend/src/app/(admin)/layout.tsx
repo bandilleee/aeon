@@ -1,9 +1,9 @@
-import React from 'react'
+import { DashboardEntry } from "@/components/layout/dashboard-entry";
 
-const layout = () => {
-  return (
-    <div>layout</div>
-  )
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <DashboardEntry isAdmin={true}>{children}</DashboardEntry>;
 }
-
-export default layout

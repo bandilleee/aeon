@@ -4,31 +4,25 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { 
-  Lock, 
-  ArrowRight, 
-  Terminal, 
-  CheckCircle, 
+import {
+  ArrowRight,
+  Terminal,
+  CheckCircle,
   AlertCircle,
-  Shield 
+  Shield,
 } from "lucide-react";
 import { z } from "zod";
 
 import { Button, PasswordInput } from "@/components/ui";
 import { Card, CardContent } from "@/components/ui/card";
+import { strongPasswordSchema } from "@/lib/validations";
 
 /**
  * Password requirements schema
  */
 const setPasswordSchema = z
   .object({
-    newPassword: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .regex(/[A-Z]/, "Must contain at least one uppercase letter")
-      .regex(/[a-z]/, "Must contain at least one lowercase letter")
-      .regex(/[0-9]/, "Must contain at least one number")
-      .regex(/[^A-Za-z0-9]/, "Must contain at least one special character"),
+    newPassword: strongPasswordSchema,
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
@@ -41,12 +35,12 @@ type SetPasswordFormData = z.infer<typeof setPasswordSchema>;
 /**
  * Password requirement checker component
  */
-function PasswordRequirement({ 
-  met, 
-  text 
-}: { 
-  met: boolean; 
-  text: string; 
+function PasswordRequirement({
+  met,
+  text,
+}: {
+  met: boolean;
+  text: string;
 }) {
   return (
     <div className="flex items-center gap-2">
@@ -78,7 +72,7 @@ export function SetPasswordForm() {
       newPassword: "",
       confirmPassword: "",
     },
-    mode: "onChange", // Validate as user types for live feedback
+    mode: "onChange",
   });
 
   // Watch password for live requirement checking
@@ -104,8 +98,8 @@ export function SetPasswordForm() {
       console.log("New password data:", data);
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      // Redirect to dashboard after successful password change
-      router.push("/dashboard");
+      // Redirect to 2FA setup
+      router.push("/setup-2fa");
     } catch (error) {
       setServerError("Failed to set password. Please try again.");
     } finally {
@@ -143,7 +137,8 @@ export function SetPasswordForm() {
             First-time login detected
           </p>
           <p className="text-xs text-amber-400/70">
-            You're using a temporary password. Please create a new secure password to continue.
+            You're using a temporary password. Please create a new secure
+            password to continue.
           </p>
         </div>
       </div>
@@ -173,7 +168,7 @@ export function SetPasswordForm() {
           <Card className="mt-3 bg-zinc-900/50">
             <CardContent className="p-3">
               <p className="text-xs text-zinc-500 mb-2 font-medium">
-                Password requirements: 
+                Password requirements:
               </p>
               <div className="grid grid-cols-2 gap-2">
                 <PasswordRequirement
@@ -226,8 +221,11 @@ export function SetPasswordForm() {
 
       {/* Security Note */}
       <p className="mt-8 text-center text-xs text-zinc-600">
-        Your password is encrypted and securely stored. {" "}
-        <a href="#" className="text-zinc-500 hover:text-zinc-400 transition-colors">
+        Your password is encrypted and securely stored.{" "}
+        <a
+          href="#"
+          className="text-zinc-500 hover:text-zinc-400 transition-colors"
+        >
           Learn about our security
         </a>
       </p>
