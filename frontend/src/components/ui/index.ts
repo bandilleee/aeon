@@ -22,3 +22,4 @@ export * from "./textarea";
 export * from "./badge";
 export * from "./modal";
 export * from "./switch";
+export * from "./multi-select";

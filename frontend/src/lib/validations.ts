@@ -185,7 +185,7 @@ export const createTaskSchema = z.object({
     message: "Please select a priority",
   }),
   dueDate: z.string().optional(),
-  collaboratorIds: z.array(z.string()).default([]),
+  collaboratorIds: z.array(z.string()),
   eventId: z.string().optional(),
 });
 

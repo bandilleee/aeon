@@ -1,9 +1,18 @@
-import React from 'react'
+import { Metadata } from "next";
+import { TaskDetails } from "@/components/tasks/task-details";
 
-const taskid = () => {
-  return (
-    <div>taskid</div>
-  )
+export const metadata: Metadata = {
+  title: "Task Details - Aeon",
+  description: "View task details",
+};
+
+interface TaskPageProps {
+  params: Promise<{
+    taskId: string;
+  }>;
 }
 
-export default taskid
+export default async function TaskPage({ params }: TaskPageProps) {
+  const { taskId } = await params;
+  return <TaskDetails taskId={taskId} />;
+}
