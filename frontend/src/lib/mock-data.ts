@@ -1,5 +1,6 @@
 import { Event, EventAttendee } from "@/types/event.types";
 import { Task, TaskComment, TaskStatus, TaskPriority } from "@/types/task.types";
+import { Member } from "@/types/member.types";
 
 /**
  * Mock events data
@@ -555,3 +556,53 @@ export function getTaskPriorityBadge(priority: TaskPriority): {
 
   return priorityConfig[priority];
 }
+
+
+/**
+ * Mock members data
+ */
+export const mockMembers: Member[] = [
+  {
+    id: "user_1",
+    displayName: "Jane Doe",
+    email: "jane@example.com",
+    initials: "JD",
+    role: "leader",
+    status: "active",
+    bio: "Community leader. Loves open source.",
+    joinedAt: "2023-04-18T09:10:00Z",
+    lastSeen: new Date(Date.now() - 1000 * 60 * 6).toISOString(), // 6 mins ago
+    badges: ["early-adopter", "python-expert"],
+  },
+  {
+    id: "user_2",
+    displayName: "John Smith",
+    email: "john@example.com",
+    initials: "JS",
+    role: "member",
+    status: "active",
+    joinedAt: "2023-05-02T14:00:00Z",
+    lastSeen: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(), // 4 hours ago
+  },
+  {
+    id: "user_3",
+    displayName: "Sarah Johnson",
+    email: "sarah@example.com",
+    initials: "SJ",
+    role: "admin",
+    status: "active",
+    joinedAt: "2022-11-15T17:05:00Z",
+    lastSeen: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+  },
+  {
+    id: "user_4",
+    displayName: "Elon Must",
+    email: "elonmust@example.com",
+    initials: "EM",
+    role: "member",
+    status: "pending",
+    joinedAt: "2024-01-10T09:00:00Z",
+    lastSeen: "",
+  },
+  // ...add more for diversity...
+];

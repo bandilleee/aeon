@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, Button, Checkbox } from "@/components/ui";
 import { Bell, Calendar, ListChecks, Users } from "lucide-react";
 
-export default function SettingsNotifications() {
+export default function SettingsNotificationsPanel() {
   const [notifications, setNotifications] = useState({
     emailNotifications: true,
     eventNotifications: true,
@@ -14,13 +14,13 @@ export default function SettingsNotifications() {
 
   function handleSave() {
     setSuccess(true);
-    setTimeout(() => setSuccess(false), 1600);
+    setTimeout(() => setSuccess(false), 1200);
     // send changes to backend
   }
   return (
-    <Card className="bg-zinc-900/80 border border-zinc-700 shadow-lg rounded-xl">
-      <CardContent className="pt-10 px-6 md:px-10 pb-16 flex flex-col gap-8 max-w-xl">
-        <h2 className="text-2xl font-semibold text-white flex items-center gap-2 mb-6">
+    <Card className="bg-zinc-900/80 border border-zinc-700 shadow-lg rounded-2xl">
+      <CardContent className="py-10 px-8 flex flex-col gap-6">
+        <h2 className="text-xl font-semibold text-white mb-2 flex items-center gap-2">
           <Bell className="h-5 w-5" /> Notification Preferences
         </h2>
         <Checkbox
@@ -43,7 +43,7 @@ export default function SettingsNotifications() {
           checked={notifications.memberNotifications}
           onChange={e => setNotifications(f => ({ ...f, memberNotifications: e.target.checked }))}
         />
-        <div className="flex justify-end pt-6">
+        <div className="flex justify-end pt-4">
           <Button onClick={handleSave}>Save Preferences</Button>
         </div>
         {success && <p className="text-green-400 mt-2">Preferences saved!</p>}

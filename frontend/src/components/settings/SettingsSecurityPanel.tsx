@@ -4,15 +4,12 @@ import { Card, CardContent, Button, Input } from "@/components/ui";
 import { Lock, ShieldCheck, KeyRound } from "lucide-react";
 import { validatePassword } from "@/lib/leader-settings-validation";
 
-// Demo code for 2FA enabled or not
-const DEMO_TWO_FA = false;
-
-export default function SettingsSecurity() {
+export default function SettingsSecurityPanel() {
   const [security, setSecurity] = useState({ password: "", newPassword: "", confirmPassword: "" });
   const [errors, setErrors] = useState({ password: "", newPassword: "", confirmPassword: "" });
   const [success, setSuccess] = useState(false);
   const [updating2FA, setUpdating2FA] = useState(false);
-  const [twofaEnabled, setTwofaEnabled] = useState(DEMO_TWO_FA);
+  const [twofaEnabled, setTwofaEnabled] = useState(false);
 
   function handlePasswordChange() {
     let errs = { password: "", newPassword: "", confirmPassword: ""};
@@ -26,7 +23,7 @@ export default function SettingsSecurity() {
     }
     setErrors(errs);
     if (!valid) return;
-    setSuccess(true); setTimeout(() => setSuccess(false), 1800);
+    setSuccess(true); setTimeout(() => setSuccess(false), 1500);
     setSecurity({ password: "", newPassword: "", confirmPassword: "" });
   }
 
@@ -35,14 +32,14 @@ export default function SettingsSecurity() {
     setTimeout(() => {
       setTwofaEnabled(val => !val);
       setUpdating2FA(false);
-    }, 1200);
+    }, 1000);
   }
 
   return (
-    <Card className="bg-zinc-900/80 border border-zinc-700 shadow-lg rounded-xl">
-      <CardContent className="pt-10 px-6 md:px-10 pb-16 flex flex-col gap-12">
+    <Card className="bg-zinc-900/80 border border-zinc-700 shadow-lg rounded-2xl">
+      <CardContent className="py-10 px-8 flex flex-col gap-10">
         <div>
-          <h2 className="text-2xl font-semibold text-white flex items-center gap-2 mb-4">
+          <h2 className="text-xl font-semibold text-white flex items-center gap-2 mb-4">
             <Lock className="h-5 w-5" /> Change Password
           </h2>
           <Input
@@ -70,34 +67,33 @@ export default function SettingsSecurity() {
             error={errors.confirmPassword}
             autoComplete="new-password"
           />
-          <div className="flex justify-end pt-4">
+          <div className="flex justify-end pt-3">
             <Button isLoading={false} onClick={handlePasswordChange}>Update Password</Button>
           </div>
           {success && <p className="text-green-400 mt-2 text-sm">Password changed!</p>}
         </div>
-        <hr className="border-zinc-800" />
         <div>
-          <h2 className="text-2xl font-semibold text-white flex items-center gap-2 mb-4">
-            <ShieldCheck className="h-5 w-5" /> Two-Factor Authentication (2FA)
+          <h2 className="text-xl font-semibold text-white flex items-center gap-2 mb-4">
+            <ShieldCheck className="h-5 w-5" /> Two-Factor Authentication
           </h2>
-          <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-6 flex items-center gap-8">
-            <div className="flex flex-col flex-1">
+          <div className="bg-zinc-800 border border-blue-900/40 rounded-xl p-6 flex flex-col md:flex-row items-center gap-8">
+            <div className="flex flex-col flex-1 min-w-[12rem]">
               <p className="text-base text-zinc-300 mb-2">
                 {twofaEnabled
-                  ? "Your account is protected with 2FA."
+                  ? "Your account is protected with 2FA (Authenticator app required)."
                   : "Your account is not protected with 2FA."}
               </p>
               <p className="text-sm text-zinc-500">
-                2FA adds an extra layer of security. Use an authenticator app like Google Authenticator or Authy.
+                Use an app like Google Authenticator or Authy. (Demo: enable/disable only)
               </p>
               {twofaEnabled && (
                 <p className="text-emerald-400 mt-2 text-sm flex items-center gap-2">
-                  <KeyRound className="h-4 w-4" /> 2FA is ON (Code required at login)
+                  <KeyRound className="h-4 w-4" /> 2FA ON
                 </p>
               )}
               {!twofaEnabled && (
                 <p className="text-orange-400 mt-2 text-sm">
-                  2FA is OFF. Enable for best security.
+                  2FA is OFF. Enable for maximum protection.
                 </p>
               )}
             </div>
@@ -105,12 +101,12 @@ export default function SettingsSecurity() {
               variant={twofaEnabled ? "danger" : "secondary"}
               isLoading={updating2FA}
               onClick={handleToggle2FA}
-              className={twofaEnabled ? "min-w-[120px]" : "min-w-[120px]"}
+              className="min-w-[120px]"
+              type="button"
             >
               {twofaEnabled ? "Disable 2FA" : "Enable 2FA"}
             </Button>
           </div>
-          {/* Optionally, show QR code for enabling, etc. */}
         </div>
       </CardContent>
     </Card>

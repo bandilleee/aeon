@@ -1,3 +1,4 @@
+export * from "./avatar";
 /**
  * UI Components Index
  * -------------------
