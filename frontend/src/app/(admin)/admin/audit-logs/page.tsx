@@ -1,9 +1,5 @@
-import React from 'react'
+import AuditLogsPage from "@/components/admin/audit-logs/audit-logs-page";
 
-const audit = () => {
-  return (
-    <div>audit</div>
-  )
+export default function AdminAuditLogsPage() {
+  return <AuditLogsPage />;
 }
-
-export default audit

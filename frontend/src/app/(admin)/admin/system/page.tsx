@@ -1,9 +1,5 @@
-import React from 'react'
+import SystemSettingsPage from "@/components/admin/system-settings/system-settings-page";
 
-const system = () => {
-  return (
-    <div>system</div>
-  )
+export default function AdminSystemPage() {
+  return <SystemSettingsPage />;
 }
-
-export default system

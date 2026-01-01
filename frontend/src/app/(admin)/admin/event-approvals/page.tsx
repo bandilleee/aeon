@@ -1,11 +1,5 @@
-"use client";
-import dynamic from "next/dynamic";
+import EventApprovalsPage from "@/components/admin/event-approvals/event-approvals-page";
 
-const EventApprovalsPage = dynamic(() =>
-  import("@/components/admin/event-approvals/event-approvals-page"),
-  { ssr: false }
-);
-
-export default function AdminEventApprovalsRoute() {
+export default function AdminEventApprovalsPage() {
   return <EventApprovalsPage />;
 }

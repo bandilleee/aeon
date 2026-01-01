@@ -1,9 +1,5 @@
-import React from 'react'
+import UsersManagementPage from "@/components/admin/users/users-management-page";
 
-const users = () => {
-  return (
-    <div>users</div>
-  )
+export default function AdminUsersPage() {
+  return <UsersManagementPage />;
 }
-
-export default users
