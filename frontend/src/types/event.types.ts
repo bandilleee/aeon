@@ -77,6 +77,7 @@ export interface EventAttendee {
     email: string;
     avatarUrl?: string;
     initials: string;
+    phone?: string;
   };
   status: "registered" | "checked_in" | "cancelled" | "no_show";
   registeredAt: string;

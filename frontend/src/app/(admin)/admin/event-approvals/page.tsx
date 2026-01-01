@@ -1,9 +1,11 @@
-import React from 'react'
+"use client";
+import dynamic from "next/dynamic";
 
-const event = () => {
-  return (
-    <div>event</div>
-  )
+const EventApprovalsPage = dynamic(() =>
+  import("@/components/admin/event-approvals/event-approvals-page"),
+  { ssr: false }
+);
+
+export default function AdminEventApprovalsRoute() {
+  return <EventApprovalsPage />;
 }
-
-export default event
