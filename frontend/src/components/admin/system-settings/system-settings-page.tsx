@@ -97,7 +97,7 @@ export default function SystemSettingsPage() {
   const ActiveTabIcon = settingsTabs.find((t) => t.id === activeTab)?.icon || Settings;
 
   return (
-    <div className="max-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <div className="border-b border-white/5 bg-zinc-950/50 backdrop-blur-xl sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-6 py-4">
