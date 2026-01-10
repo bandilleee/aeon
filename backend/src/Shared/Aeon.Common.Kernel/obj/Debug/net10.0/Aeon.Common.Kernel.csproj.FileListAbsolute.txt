@@ -1,0 +1,13 @@
+C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\src\Shared\Aeon.Common.Kernel\obj\Debug\net10.0\Aeon.Common.Kernel.csproj.AssemblyReference.cache
+C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\src\Shared\Aeon.Common.Kernel\obj\Debug\net10.0\Aeon.Common.Kernel.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\src\Shared\Aeon.Common.Kernel\obj\Debug\net10.0\Aeon.Common.Kernel.AssemblyInfoInputs.cache
+C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\src\Shared\Aeon.Common.Kernel\obj\Debug\net10.0\Aeon.Common.Kernel.AssemblyInfo.cs
+C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\src\Shared\Aeon.Common.Kernel\obj\Debug\net10.0\Aeon.Common.Kernel.csproj.CoreCompileInputs.cache
+C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\src\Shared\Aeon.Common.Kernel\obj\Debug\net10.0\Aeon.Common.Kernel.sourcelink.json
+C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\src\Shared\Aeon.Common.Kernel\bin\Debug\net10.0\Aeon.Common.Kernel.deps.json
+C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\src\Shared\Aeon.Common.Kernel\bin\Debug\net10.0\Aeon.Common.Kernel.dll
+C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\src\Shared\Aeon.Common.Kernel\bin\Debug\net10.0\Aeon.Common.Kernel.pdb
+C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\src\Shared\Aeon.Common.Kernel\obj\Debug\net10.0\Aeon.Common.Kernel.dll
+C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\src\Shared\Aeon.Common.Kernel\obj\Debug\net10.0\refint\Aeon.Common.Kernel.dll
+C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\src\Shared\Aeon.Common.Kernel\obj\Debug\net10.0\Aeon.Common.Kernel.pdb
+C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\src\Shared\Aeon.Common.Kernel\obj\Debug\net10.0\ref\Aeon.Common.Kernel.dll
