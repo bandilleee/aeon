@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "mIuuGP8rNG0=",
+  "dgSpecHash": "GNCl9NmEgsI=",
   "success": true,
-  "projectFilePath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.Web\\Aeon.BuildingBlocks.Web.csproj",
+  "projectFilePath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.Web\\Aeon.BuildingBlocks.Web.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\bandi\\.nuget\\packages\\mediatr\\12.5.0\\mediatr.12.5.0.nupkg.sha512",
     "C:\\Users\\bandi\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512"

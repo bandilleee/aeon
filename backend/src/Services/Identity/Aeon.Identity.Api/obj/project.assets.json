@@ -3036,11 +3036,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Api\\Aeon.Identity.Api.csproj",
+      "projectUniqueName": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Api\\Aeon.Identity.Api.csproj",
       "projectName": "Aeon.Identity.Api",
-      "projectPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Api\\Aeon.Identity.Api.csproj",
+      "projectPath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Api\\Aeon.Identity.Api.csproj",
       "packagesPath": "C:\\Users\\bandi\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Api\\obj\\",
+      "outputPath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Api\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\bandi\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -3055,14 +3055,14 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.Web\\Aeon.BuildingBlocks.Web.csproj": {
-              "projectPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.Web\\Aeon.BuildingBlocks.Web.csproj"
+            "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.Web\\Aeon.BuildingBlocks.Web.csproj": {
+              "projectPath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.Web\\Aeon.BuildingBlocks.Web.csproj"
             },
-            "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Application\\Aeon.Identity.Application.csproj": {
-              "projectPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Application\\Aeon.Identity.Application.csproj"
+            "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Application\\Aeon.Identity.Application.csproj": {
+              "projectPath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Application\\Aeon.Identity.Application.csproj"
             },
-            "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Infrastructure\\Aeon.Identity.Infrastructure.csproj": {
-              "projectPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Infrastructure\\Aeon.Identity.Infrastructure.csproj"
+            "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Infrastructure\\Aeon.Identity.Infrastructure.csproj": {
+              "projectPath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Infrastructure\\Aeon.Identity.Infrastructure.csproj"
             }
           }
         }

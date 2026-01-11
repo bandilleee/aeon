@@ -114,11 +114,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.Web\\Aeon.BuildingBlocks.Web.csproj",
+      "projectUniqueName": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.Web\\Aeon.BuildingBlocks.Web.csproj",
       "projectName": "Aeon.BuildingBlocks.Web",
-      "projectPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.Web\\Aeon.BuildingBlocks.Web.csproj",
+      "projectPath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.Web\\Aeon.BuildingBlocks.Web.csproj",
       "packagesPath": "C:\\Users\\bandi\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.Web\\obj\\",
+      "outputPath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.Web\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\bandi\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -133,11 +133,11 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.CQRS\\Aeon.BuildingBlocks.CQRS.csproj": {
-              "projectPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.CQRS\\Aeon.BuildingBlocks.CQRS.csproj"
+            "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.CQRS\\Aeon.BuildingBlocks.CQRS.csproj": {
+              "projectPath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.CQRS\\Aeon.BuildingBlocks.CQRS.csproj"
             },
-            "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj": {
-              "projectPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj"
+            "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj": {
+              "projectPath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj"
             }
           }
         }
