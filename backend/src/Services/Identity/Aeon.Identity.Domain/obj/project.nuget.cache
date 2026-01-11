@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "nXi+DP/XA38=",
+  "dgSpecHash": "nUtDVeoYV8Q=",
   "success": true,
-  "projectFilePath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Domain\\Aeon.Identity.Domain.csproj",
+  "projectFilePath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Domain\\Aeon.Identity.Domain.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\bandi\\.nuget\\packages\\mediatr\\12.5.0\\mediatr.12.5.0.nupkg.sha512",
     "C:\\Users\\bandi\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",

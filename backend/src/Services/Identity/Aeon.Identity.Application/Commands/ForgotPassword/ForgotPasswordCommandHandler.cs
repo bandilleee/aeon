@@ -1,50 +1,57 @@
 using Aeon.BuildingBlocks.CQRS.Commands;
 using Aeon.Identity.Application.Interfaces;
-using Aeon. Identity.Domain.Repositories;
+using Aeon.Identity.Domain.Repositories;
+using Microsoft.Extensions.Configuration;
 
 namespace Aeon.Identity.Application.Commands.ForgotPassword;
 
-// Handles forgot password requests.
-// Always returns success for security (don't reveal if email exists).
-public sealed class ForgotPasswordCommandHandler: ICommandHandler<ForgotPasswordCommand>
+// Handles forgot password requests by generating secure reset tokens.
+public sealed class ForgotPasswordCommandHandler : ICommandHandler<ForgotPasswordCommand>
 {
     private readonly IUserRepository _userRepository;
-    private readonly IJwtService _jwtService;
+    private readonly ITokenHasher _tokenHasher;
+    private readonly IEmailService _emailService;
     private readonly IUnitOfWork _unitOfWork;
-    // TODO: Add IEmailService when implementing email sending
+    private readonly string _frontendBaseUrl;
 
     public ForgotPasswordCommandHandler(
         IUserRepository userRepository,
-        IJwtService jwtService,
-        IUnitOfWork unitOfWork)
+        ITokenHasher tokenHasher,
+        IEmailService emailService,
+        IUnitOfWork unitOfWork,
+        IConfiguration configuration)
     {
         _userRepository = userRepository;
-        _jwtService = jwtService;
+        _tokenHasher = tokenHasher;
+        _emailService = emailService;
         _unitOfWork = unitOfWork;
+        _frontendBaseUrl = configuration.GetValue<string>("Email:FrontendBaseUrl") ?? "http://localhost:3000";
     }
 
-    // <inheritdoc />
     public async Task Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
     {
-        // 1. Find user by email (silently ignore if not found for security)
         var user = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
 
-        if (user is not null)
+        // Terminate silently if user is not found to prevent account enumeration attacks
+        if (user is null)
         {
-            // 2. Generate reset token
-            var resetToken = _jwtService.GenerateRefreshToken(); // Reuse secure random generation
-            user.GeneratePasswordResetToken(resetToken, expiryHours: 1);
-
-            // 3. Save changes
-            await _unitOfWork. SaveChangesAsync(cancellationToken);
-
-            // 4. TODO: Send email with reset link
-            // await _emailService.SendPasswordResetEmailAsync(user.Email, resetToken);
-            
-            // For now, log the token (remove in production!)
-            Console.WriteLine($"[DEV] Password reset token for {user.Email}: {resetToken}");
+            return;
         }
 
-        // Always return success (don't reveal if email exists)
+        // Generate and hash a secure, unique reset token
+        var resetToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
+        var hashedToken = _tokenHasher.Hash(resetToken);
+        
+        user.GeneratePasswordResetToken(hashedToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        var resetUrl = $"{_frontendBaseUrl}/reset-password?token={resetToken}&email={Uri.EscapeDataString(user.Email)}";
+
+        await _emailService.SendPasswordResetEmailAsync(
+            user.Email,
+            resetToken,
+            resetUrl,
+            cancellationToken);
     }
 }

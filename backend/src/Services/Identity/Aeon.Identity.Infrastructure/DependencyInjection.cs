@@ -9,41 +9,45 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Aeon.Identity.Infrastructure;
 
+/// <summary>
+/// Extension methods for registering Infrastructure layer services.
+/// </summary>
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Adds Infrastructure layer services to the DI container.
+    /// </summary>
     public static IServiceCollection AddIdentityInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // Database
+        // Database Configuration
         services.AddDbContext<IdentityDbContext>(options =>
             options.UseNpgsql(
                 configuration.GetConnectionString("IdentityDb"),
                 npgsql => npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "identity")));
 
-        // Database Seeder
         services.AddScoped<IdentityDbContextSeeder>();
 
-        // Repositories
+        // Repositories & Persistence
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IBackupCodeRepository, BackupCodeRepository>();
-
-        // Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        // Settings
+        // Configuration Settings
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
         services.Configure<TotpSettings>(configuration.GetSection(TotpSettings.SectionName));
         services.Configure<RecaptchaSettings>(configuration.GetSection(RecaptchaSettings.SectionName));
+        services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.SectionName));
 
-        // Services
+        // Infrastructure Services
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<ITokenHasher, TokenHasher>();
         services.AddSingleton<IJwtService, JwtService>();
         services.AddSingleton<ITotpService, TotpService>();
-
-        // reCAPTCHA service with HttpClient
+        
+        services.AddScoped<IEmailService, EmailService>();
         services.AddHttpClient<IRecaptchaService, RecaptchaService>();
 
         return services;

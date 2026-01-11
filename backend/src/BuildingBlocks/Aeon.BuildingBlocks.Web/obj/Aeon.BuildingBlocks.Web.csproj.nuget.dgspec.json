@@ -373,8 +373,8 @@
               "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.CQRS\\Aeon.BuildingBlocks.CQRS.csproj": {
                 "projectPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.CQRS\\Aeon.BuildingBlocks.CQRS.csproj"
               },
-              "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj": {
-                "projectPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj"
+              "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj": {
+                "projectPath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj"
               }
             }
           }
@@ -832,14 +832,14 @@
         }
       }
     },
-    "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj": {
+    "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj",
+        "projectUniqueName": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj",
         "projectName": "Aeon.Common.Kernel",
-        "projectPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj",
+        "projectPath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj",
         "packagesPath": "C:\\Users\\bandi\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\obj\\",
+        "outputPath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\bandi\\AppData\\Roaming\\NuGet\\NuGet.Config"

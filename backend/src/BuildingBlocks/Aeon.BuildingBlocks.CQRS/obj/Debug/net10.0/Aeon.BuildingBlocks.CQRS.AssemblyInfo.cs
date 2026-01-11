@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Aeon.BuildingBlocks.CQRS")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c8d8222583535d9e28d788a41e92a6ff974a1923")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+69ba7a239c6951d28926eb0a5e7acde2e28b6ffc")]
 [assembly: System.Reflection.AssemblyProductAttribute("Aeon.BuildingBlocks.CQRS")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Aeon.BuildingBlocks.CQRS")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
