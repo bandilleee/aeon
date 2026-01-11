@@ -6,6 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Aeon.Identity.Infrastructure.Persistence;
 
+/// <summary>
+/// Handles the initial migration and seeding of the Identity database.
+/// </summary>
 public sealed partial class IdentityDbContextSeeder
 {
     private readonly IdentityDbContext _dbContext;
@@ -22,14 +25,14 @@ public sealed partial class IdentityDbContextSeeder
         _logger = logger;
     }
 
+    /// <summary>
+    /// Executes the seeding logic, including applying pending migrations.
+    /// </summary>
     public async Task SeedAsync()
     {
         try
         {
-            // Apply pending migrations
             await _dbContext.Database.MigrateAsync();
-
-            // Seed admin user if no users exist
             await SeedAdminUserAsync();
         }
         catch (Exception ex)
@@ -49,13 +52,12 @@ public sealed partial class IdentityDbContextSeeder
 
         LogSeedingAdmin(_logger);
 
-        // Create admin user with temporary password
-        // Password: Admin@123 (user must change on first login)
+        // Define initial credentials; user should change this upon first login
         const string temporaryPassword = "Admin@123";
         var passwordHash = _passwordHasher.Hash(temporaryPassword);
 
         var adminUser = User.Create(
-            email: "admin@aeon.local",
+            email: "Bandiillleee@gmail.com",
             firstName: "System",
             lastName: "Administrator",
             passwordHash: passwordHash,
@@ -67,16 +69,16 @@ public sealed partial class IdentityDbContextSeeder
         LogAdminCreated(_logger, temporaryPassword);
     }
 
-    // High-performance logging
-    [LoggerMessage(Level = LogLevel.Error, Message = "An error occurred while seeding the database")]
+    // High-performance Source-Generated Logging
+    [LoggerMessage(Level = LogLevel.Error, Message = "An error occurred while seeding the database.")]
     private static partial void LogSeedError(ILogger logger, Exception exception);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Database already contains users, skipping seed")]
+    [LoggerMessage(Level = LogLevel.Information, Message = "Database already contains users; skipping seed.")]
     private static partial void LogSkippingSeed(ILogger logger);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Seeding admin user... ")]
+    [LoggerMessage(Level = LogLevel.Information, Message = "Seeding admin user...")]
     private static partial void LogSeedingAdmin(ILogger logger);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Admin user created successfully. Email: admin@aeon.local, Temporary Password: {Password}")]
+    [LoggerMessage(Level = LogLevel.Information, Message = "Admin user created successfully. Email: Bandiillleee@gmail.com, Temporary Password: {Password}")]
     private static partial void LogAdminCreated(ILogger logger, string password);
 }
