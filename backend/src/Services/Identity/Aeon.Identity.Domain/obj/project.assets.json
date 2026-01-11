@@ -144,11 +144,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Domain\\Aeon.Identity.Domain.csproj",
+      "projectUniqueName": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Domain\\Aeon.Identity.Domain.csproj",
       "projectName": "Aeon.Identity.Domain",
-      "projectPath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Domain\\Aeon.Identity.Domain.csproj",
+      "projectPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Domain\\Aeon.Identity.Domain.csproj",
       "packagesPath": "C:\\Users\\bandi\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Domain\\obj\\",
+      "outputPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Domain\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\bandi\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -163,8 +163,8 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj": {
-              "projectPath": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj"
+            "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj": {
+              "projectPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel\\Aeon.Common.Kernel.csproj"
             }
           }
         }

@@ -13,14 +13,9 @@ public sealed class IdentityDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<BackupCode> BackupCodes => Set<BackupCode>();
 
-    public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
-        : base(options)
-    {
-    }
-
     public IdentityDbContext(
         DbContextOptions<IdentityDbContext> options,
-        IMediator mediator)
+        IMediator? mediator = null)
         : base(options)
     {
         _mediator = mediator;
@@ -31,7 +26,6 @@ public sealed class IdentityDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(IdentityDbContext).Assembly);
-
         modelBuilder.HasDefaultSchema("identity");
     }
 

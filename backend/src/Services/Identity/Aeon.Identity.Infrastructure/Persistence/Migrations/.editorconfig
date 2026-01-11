@@ -1,0 +1,4 @@
+# Disable code analysis warnings for auto-generated EF Core migration files
+[*.cs]
+generated_code = true
+dotnet_diagnostic.CA1861.severity = none

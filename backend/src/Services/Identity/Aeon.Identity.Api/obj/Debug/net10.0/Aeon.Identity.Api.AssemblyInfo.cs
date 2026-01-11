@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Aeon.Identity.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+02c99a7732c6d7f11ed8f8f43638ed3f3c5b6676")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c8d8222583535d9e28d788a41e92a6ff974a1923")]
 [assembly: System.Reflection.AssemblyProductAttribute("Aeon.Identity.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Aeon.Identity.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -9,10 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Aeon.Identity.Infrastructure;
 
-// Extension methods for registering Infrastructure layer services.
 public static class DependencyInjection
 {
-    // Adds Infrastructure layer services to the DI container.
     public static IServiceCollection AddIdentityInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration)
@@ -22,6 +20,9 @@ public static class DependencyInjection
             options.UseNpgsql(
                 configuration.GetConnectionString("IdentityDb"),
                 npgsql => npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "identity")));
+
+        // Database Seeder
+        services.AddScoped<IdentityDbContextSeeder>();
 
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
@@ -34,12 +35,16 @@ public static class DependencyInjection
         // Settings
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
         services.Configure<TotpSettings>(configuration.GetSection(TotpSettings.SectionName));
+        services.Configure<RecaptchaSettings>(configuration.GetSection(RecaptchaSettings.SectionName));
 
         // Services
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<ITokenHasher, TokenHasher>();
         services.AddSingleton<IJwtService, JwtService>();
         services.AddSingleton<ITotpService, TotpService>();
+
+        // reCAPTCHA service with HttpClient
+        services.AddHttpClient<IRecaptchaService, RecaptchaService>();
 
         return services;
     }
