@@ -1,9 +1,0 @@
-{
-  "Aeon.BuildingBlocks.CQRS, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.CQRS",
-  "Aeon.BuildingBlocks.Web, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\BuildingBlocks\\Aeon.BuildingBlocks.Web",
-  "Aeon.Common.Kernel, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Shared\\Aeon.Common.Kernel",
-  "Aeon.Identity.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Api",
-  "Aeon.Identity.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Application",
-  "Aeon.Identity.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Domain",
-  "Aeon.Identity.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\bandi\\OneDrive\\Documentos\\Projects\\aeon\\backend\\src\\Services\\Identity\\Aeon.Identity.Infrastructure"
-}

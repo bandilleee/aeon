@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "@/styles/global.css";
+import { AuthProvider } from "@/contexts/auth-context";
 
 export const metadata: Metadata = {
   title: "Aeon",
@@ -19,7 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="min-h-screen bg-[#050505] text-zinc-400 antialiased">
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

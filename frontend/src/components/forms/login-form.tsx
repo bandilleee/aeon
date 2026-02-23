@@ -1,190 +1,185 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Mail, ArrowRight, Terminal } from "lucide-react";
-
-import { Button, Input, PasswordInput, Checkbox } from "@/components/ui";
-import { loginSchema, type LoginFormData } from "@/lib/validations";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/auth-context';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import Link from 'next/link';
+import { Mail, Lock, Terminal, ArrowRight } from 'lucide-react';
 
 export function LoginForm() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    defaultValues:  {
-      email:  "",
-      password:  "",
-      rememberMe: false,
-    },
-    mode: "onBlur",
+  const { login } = useAuth();
+  
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    rememberMe: false,
   });
+  
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [requires2FA, setRequires2FA] = useState(false);
+  const [userId, setUserId] = useState('');
 
-  const onSubmit = async (data: LoginFormData) => {
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
     try {
-      setIsLoading(true);
-      setServerError(null);
+      const result = await login({
+        email: formData.email,
+        password: formData.password,
+        rememberMe: formData.rememberMe,
+      });
 
-      // TODO:  Replace with actual API call to your C# backend
-      console.log("Login data:", data);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Mock response from backend
-      const mockResponse = {
-        success: true,
-        user: {
-          id: "1",
-          email:  data.email,
-          role: "member" as "member" | "admin",
-        },
-        requiresPasswordChange: true, // TRUE if using temp password
-      };
-
-      // Check if user needs to set a new password
-      if (mockResponse. requiresPasswordChange) {
-        // Redirect to set password page
-        router.push("/set-password");
-        return;
+      // NEW: Check if the bouncer said no!
+      if (!result.success) {
+        setError(result.error || "Login failed");
+        setIsLoading(false);
+        return; // Stop running this function
       }
 
-      // Otherwise, redirect based on role
-      if (mockResponse.user.role === "admin") {
-        router.push("/admin");
+      if (result.requiresTwoFactor) {
+        setRequires2FA(true);
+        setUserId(result.userId || '');
       } else {
-        router.push("/dashboard");
+        router.push('/dashboard');
       }
-    } catch (error) {
-      setServerError("Invalid email or password.  Please try again.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setIsLoading(false);
     }
-  };
+  }
+
+  // If 2FA required, redirect to 2FA page
+  if (requires2FA) {
+    router.push(`/login/2fa?userId=${userId}`);
+    return null;
+  }
 
   return (
-    <div className="animate-fade-in">
-      {/* Logo */}
-      <div className="flex items-center justify-center gap-3 mb-8">
-        <div className="w-10 h-10 bg-white/5 rounded-lg border border-white/10 flex items-center justify-center text-white shadow-lg shadow-black/50">
-          <Terminal className="h-5 w-5" strokeWidth={1.5} />
-        </div>
-        <span className="text-zinc-100 font-semibold tracking-tight text-lg">
-          AEON
-        </span>
-      </div>
-
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-semibold text-white tracking-tight mb-2">
-          Welcome back
-        </h1>
-        <p className="text-sm text-zinc-500">
-          Sign in to your account to continue
-        </p>
-      </div>
-
-      {/* Server Error Alert */}
-      {serverError && (
-        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-3">
-          <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
-            <span className="text-red-400 text-xs">!</span>
+    <div className="animate-fade-in min-h-screen flex items-center justify-center bg-[#050505] px-4 py-12">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="w-10 h-10 bg-white/5 rounded-lg border border-white/10 flex items-center justify-center text-white shadow-lg shadow-black/50">
+            <Terminal className="h-5 w-5" strokeWidth={1.5} />
           </div>
-          <p className="text-sm text-red-400">{serverError}</p>
-        </div>
-      )}
-
-      {/* Login Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* Email Field */}
-        <Input
-          label="Email address"
-          type="email"
-          placeholder="you@example.com"
-          autoComplete="email"
-          leftIcon={<Mail className="h-4 w-4" />}
-          error={errors.email?.message}
-          disabled={isLoading}
-          {...register("email")}
-        />
-
-        {/* Password Field */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-medium text-zinc-200">
-              Password
-            </label>
-            <Link
-              href="/forgot-password"
-              className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
-            >
-              Forgot password? 
-            </Link>
-          </div>
-          <PasswordInput
-            placeholder="Enter your password"
-            autoComplete="current-password"
-            error={errors.password?.message}
-            disabled={isLoading}
-            {...register("password")}
-          />
-        </div>
-
-        {/* Remember Me */}
-        <Checkbox
-          label="Remember me for 30 days"
-          disabled={isLoading}
-          {...register("rememberMe")}
-        />
-
-        {/* Submit Button */}
-        <Button
-          type="submit"
-          className="w-full"
-          size="lg"
-          isLoading={isLoading}
-          rightIcon={!isLoading && <ArrowRight className="h-4 w-4" />}
-        >
-          Sign in
-        </Button>
-      </form>
-
-      {/* Divider */}
-      <div className="relative my-8">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-white/5"></div>
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-[#050505] px-4 text-zinc-600">
-            New to Aeon? 
+          <span className="text-zinc-100 font-semibold tracking-tight text-lg">
+            AEON
           </span>
         </div>
+
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-semibold text-white tracking-tight mb-2">
+            Sign in to your account
+          </h1>
+          <p className="text-sm text-zinc-500">
+            Enter your credentials below to continue
+          </p>
+        </div>
+
+        {/* Server Error */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <p className="text-sm text-red-400">{error}</p>
+          </div>
+        )}
+
+        {/* Form */}
+        <form className="space-y-5" onSubmit={handleSubmit}>
+          {/* Email */}
+          <Input
+            label="Email address"
+            placeholder="you@example.com"
+            type="email"
+            autoComplete="email"
+            leftIcon={<Mail className="h-4 w-4" />}
+            disabled={isLoading}
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            required
+          />
+
+          {/* Password */}
+          <Input
+            label="Password"
+            placeholder="Enter your password"
+            type="password"
+            autoComplete="current-password"
+            leftIcon={<Lock className="h-4 w-4" />}
+            disabled={isLoading}
+            value={formData.password}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            required
+          />
+
+          {/* Remember Me & Forgot Password */}
+          <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="rememberMe"
+                checked={formData.rememberMe}
+                onCheckedChange={(checked) => 
+                  setFormData({ ...formData, rememberMe: checked as boolean })
+                }
+                disabled={isLoading}
+              />
+              <label htmlFor="rememberMe" className="text-sm text-zinc-400 cursor-pointer">
+                Remember me
+              </label>
+            </div>
+
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
+          {/* Sign In Button */}
+          <Button
+            type="submit"
+            className="w-full"
+            size="lg"
+            isLoading={isLoading}
+            rightIcon={!isLoading && <ArrowRight className="h-4 w-4" />}
+          >
+            Sign in
+          </Button>
+        </form>
+
+        {/* Divider */}
+        <div className="relative my-8">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-white/5"></div>
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-[#050505] px-4 text-zinc-600">
+              Don't have an account?
+            </span>
+          </div>
+        </div>
+
+        {/* Request Access Button */}
+        <Button
+          variant="secondary"
+          className="w-full"
+          size="lg"
+          onClick={() => router.push("/request-access")}
+          rightIcon={<ArrowRight className="h-4 w-4" />}
+        >
+          Request access
+        </Button>
       </div>
-
-      {/* Request Access Button */}
-      <Button
-        variant="secondary"
-        className="w-full"
-        size="lg"
-        onClick={() => router.push("/request-access")}
-      >
-        Request access
-      </Button>
-
-      {/* Security Note */}
-      <p className="mt-8 text-center text-xs text-zinc-600">
-        Protected by enterprise-grade security. {" "}
-        <a href="#" className="text-zinc-500 hover:text-zinc-400 transition-colors">
-          Learn more
-        </a>
-      </p>
     </div>
   );
 }
