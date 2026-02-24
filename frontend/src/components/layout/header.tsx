@@ -274,14 +274,14 @@ export function Header({ onMobileMenuToggle, isMobileMenuOpen, isAdmin }: Header
 
                   {/* Menu Items */}
                   <div className="p-1">
-                    <Link
-                      href="/dashboard/settings/profile"
+                    {/* <Link
+                      href="/dashboard/settings/"
                       className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-400 hover:text-zinc-200 hover:bg-white/5 rounded-md transition-colors"
                       onClick={() => setShowUserMenu(false)}
                     >
                       <User className="h-4 w-4" />
                       Profile
-                    </Link>
+                    </Link> */}
                     <Link
                       href="/dashboard/settings"
                       className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-400 hover:text-zinc-200 hover:bg-white/5 rounded-md transition-colors"

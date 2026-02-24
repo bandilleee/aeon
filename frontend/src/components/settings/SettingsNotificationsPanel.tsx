@@ -1,53 +1,164 @@
 "use client";
+
 import { useState } from "react";
-import { Card, CardContent, Button, Checkbox } from "@/components/ui";
-import { Bell, Calendar, ListChecks, Users } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, Button, Switch } from "@/components/ui";
+import { Bell, Calendar, ListChecks, Users, Mail, Save, CheckCircle } from "lucide-react";
+import { useEffect } from "react";
+import { settingsService } from "@/services/settings.service";
+import { Loader2 } from "lucide-react";
+
+const CURRENT_USER_ID = "user_1";
 
 export default function SettingsNotificationsPanel() {
   const [notifications, setNotifications] = useState({
-    emailNotifications: true,
-    eventNotifications: true,
-    taskNotifications: false,
-    memberNotifications: true,
+    emailNotifications: true, eventNotifications: true, taskNotifications: false, memberNotifications: true,
   });
+  
+  const [isLoading, setIsLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  function handleSave() {
-    setSuccess(true);
-    setTimeout(() => setSuccess(false), 1200);
-    // send changes to backend
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        setIsLoading(true);
+        const response = await settingsService.getSettings(CURRENT_USER_ID);
+        if (response.success && response.data) {
+          setNotifications({
+            emailNotifications: response.data.emailNotifications,
+            eventNotifications: response.data.eventNotifications,
+            taskNotifications: response.data.taskNotifications,
+            memberNotifications: response.data.memberNotifications,
+          });
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadSettings();
+  }, []);
+
+  async function handleSave() {
+    try {
+      setSaving(true);
+      const response = await settingsService.updateNotifications(CURRENT_USER_ID, notifications);
+      if (response.success) {
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 3000);
+      }
+    } finally {
+      setSaving(false);
+    }
   }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-zinc-500">
+        <Loader2 className="h-8 w-8 animate-spin mb-4" />
+        <p>Loading preferences...</p>
+      </div>
+    );
+  }
+
   return (
-    <Card className="bg-zinc-900/80 border border-zinc-700 shadow-lg rounded-2xl">
-      <CardContent className="py-10 px-8 flex flex-col gap-6">
-        <h2 className="text-xl font-semibold text-white mb-2 flex items-center gap-2">
-          <Bell className="h-5 w-5" /> Notification Preferences
-        </h2>
-        <Checkbox
-          label={<span className="flex items-center gap-2"><Bell className="h-4 w-4" /> All email notifications</span>}
-          checked={notifications.emailNotifications}
-          onChange={e => setNotifications(f => ({ ...f, emailNotifications: e.target.checked }))}
-        />
-        <Checkbox
-          label={<span className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Event notifications</span>}
-          checked={notifications.eventNotifications}
-          onChange={e => setNotifications(f => ({ ...f, eventNotifications: e.target.checked }))}
-        />
-        <Checkbox
-          label={<span className="flex items-center gap-2"><ListChecks className="h-4 w-4" /> Task notifications</span>}
-          checked={notifications.taskNotifications}
-          onChange={e => setNotifications(f => ({ ...f, taskNotifications: e.target.checked }))}
-        />
-        <Checkbox
-          label={<span className="flex items-center gap-2"><Users className="h-4 w-4" /> Member activity</span>}
-          checked={notifications.memberNotifications}
-          onChange={e => setNotifications(f => ({ ...f, memberNotifications: e.target.checked }))}
-        />
-        <div className="flex justify-end pt-4">
-          <Button onClick={handleSave}>Save Preferences</Button>
-        </div>
-        {success && <p className="text-green-400 mt-2">Preferences saved!</p>}
-      </CardContent>
-    </Card>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      
+      {/* Communication Delivery Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Mail className="h-5 w-5 text-zinc-500" /> Communication Delivery
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <Switch
+            checked={notifications.emailNotifications}
+            onChange={val => setNotifications(f => ({ ...f, emailNotifications: val }))}
+            label="Email Notifications"
+            description="Receive a daily digest and important alerts directly to your inbox."
+          />
+        </CardContent>
+      </Card>
+
+      {/* Platform Alerts Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Bell className="h-5 w-5 text-zinc-500" /> Platform Alerts
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="space-y-6">
+            
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-white/5 rounded-lg border border-white/5 mt-1 hidden sm:block">
+                <Calendar className="h-4 w-4 text-blue-400" />
+              </div>
+              <div className="flex-1">
+                <Switch
+                  checked={notifications.eventNotifications}
+                  onChange={val => setNotifications(f => ({ ...f, eventNotifications: val }))}
+                  label="Event Updates"
+                  description="Get notified when an event is created, updated, or receives new RSVPs."
+                />
+              </div>
+            </div>
+
+            <hr className="border-white/5" />
+
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-white/5 rounded-lg border border-white/5 mt-1 hidden sm:block">
+                <ListChecks className="h-4 w-4 text-emerald-400" />
+              </div>
+              <div className="flex-1">
+                <Switch
+                  checked={notifications.taskNotifications}
+                  onChange={val => setNotifications(f => ({ ...f, taskNotifications: val }))}
+                  label="Task Assignments"
+                  description="Alerts for tasks assigned to you, impending due dates, and status changes."
+                />
+              </div>
+            </div>
+
+            <hr className="border-white/5" />
+
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-white/5 rounded-lg border border-white/5 mt-1 hidden sm:block">
+                <Users className="h-4 w-4 text-purple-400" />
+              </div>
+              <div className="flex-1">
+                <Switch
+                  checked={notifications.memberNotifications}
+                  onChange={val => setNotifications(f => ({ ...f, memberNotifications: val }))}
+                  label="Member Activity"
+                  description="Notifications for new member registrations, profile updates, and departures."
+                />
+              </div>
+            </div>
+
+          </div>
+
+          {/* Action Footer */}
+          <div className="flex items-center justify-between pt-6 mt-4 border-t border-white/5">
+            <div>
+              {success && (
+                <p className="text-emerald-400 text-sm font-medium flex items-center gap-1.5 animate-in fade-in">
+                  <CheckCircle className="h-4 w-4" /> Preferences saved successfully
+                </p>
+              )}
+            </div>
+            <Button 
+              isLoading={saving} 
+              onClick={handleSave}
+              leftIcon={<Save className="h-4 w-4" />}
+              className="min-w-[170px]"
+            >
+              Save Preferences
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+    </div>
   );
 }

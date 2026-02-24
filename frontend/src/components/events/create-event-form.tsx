@@ -29,6 +29,7 @@ import {
 } from "@/components/ui";
 import { ConfirmationModal, Modal } from "@/components/ui/modal";
 import { createEventSchema, CreateEventFormData } from "@/lib/validations";
+import { eventService } from "@/services/events.service";
 
 /**
  * Category options
@@ -97,7 +98,7 @@ export function CreateEventForm() {
   };
 
   /**
-   * Confirm and submit the event
+   * Confirm and submit the event to C# Backend!
    */
   const handleConfirmSubmit = async () => {
     if (!formData) return;
@@ -106,14 +107,45 @@ export function CreateEventForm() {
       setIsSubmitting(true);
       setShowConfirmModal(false);
 
-      // TODO: Replace with actual API call to your C# backend
-      console.log("Creating event:", formData);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // We need to stitch the Date string and Time string together for C#
+      // Format example: "2026-02-24T18:30:00"
+      const combinedStartDate = formData.startTime 
+        ? `${formData.startDate}T${formData.startTime}:00` 
+        : `${formData.startDate}T00:00:00`;
+        
+      const combinedEndDate = formData.endTime 
+        ? `${formData.endDate}T${formData.endTime}:00` 
+        : `${formData.endDate}T23:59:59`;
 
-      // Show success modal
-      setShowSuccessModal(true);
+      // Build the payload for the backend
+      const newEventPayload = {
+        title: formData.title,
+        description: formData.description || "",
+        status: "pending_approval", // Always starts as pending!
+        category: formData.category || "other",
+        startDate: combinedStartDate,
+        endDate: combinedEndDate,
+        isVirtual: formData.isVirtual,
+        location: formData.location || "",
+        virtualLink: formData.virtualLink || "",
+        visibility: formData.visibility || "public",
+        maxAttendees: formData.maxAttendees || null,
+        requiresRegistration: formData.requiresRegistration,
+        currentAttendees: 0,
+        createdBy: "user_1" // Temporary until Auth context is built
+      };
+
+      const response = await eventService.createEvent(newEventPayload);
+
+      if (response.success) {
+        setShowSuccessModal(true);
+      } else {
+        alert(`Failed to create event: ${response.error?.message || "Unknown error"}`);
+      }
+
     } catch (error) {
       console.error("Failed to create event:", error);
+      alert("A network error occurred. Is your server running?");
     } finally {
       setIsSubmitting(false);
     }

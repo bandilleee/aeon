@@ -14,5 +14,8 @@ namespace OrgManager.Api.Data
         // Add these two new lines!
         public DbSet<Event> Events { get; set; }
         public DbSet<TaskItem> Tasks { get; set; }
+        public DbSet<TaskComment> TaskComments { get; set; }
+        public DbSet<Member> Members { get; set; }
+        public DbSet<UserSettings> UserSettings { get; set; }
     }
 }

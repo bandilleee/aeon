@@ -6,7 +6,7 @@ using OrgManager.Api.Models;
 
 namespace OrgManager.Api.Controllers
 {
-    [Authorize] // We are locking the Events door too!
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class EventsController : ControllerBase
@@ -19,13 +19,27 @@ namespace OrgManager.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Event>>> GetEvents()
+        public async Task<ActionResult<ApiResponse<IEnumerable<Event>>>> GetEvents()
         {
-            return await _context.Events.ToListAsync();
+            var events = await _context.Events.ToListAsync();
+            return Ok(new ApiResponse<IEnumerable<Event>> { Success = true, Data = events });
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ApiResponse<Event>>> GetEvent(Guid id)
+        {
+            var ev = await _context.Events.FindAsync(id);
+
+            if (ev == null)
+            {
+                return NotFound(new ApiResponse<object> { Success = false, Error = new { message = "Event not found" } });
+            }
+
+            return Ok(new ApiResponse<Event> { Success = true, Data = ev });
         }
 
         [HttpPost]
-        public async Task<ActionResult<Event>> CreateEvent(Event newEvent)
+        public async Task<ActionResult<ApiResponse<Event>>> CreateEvent(Event newEvent)
         {
             newEvent.Id = Guid.NewGuid();
             newEvent.CreatedAt = DateTime.UtcNow;
@@ -34,30 +48,15 @@ namespace OrgManager.Api.Controllers
             _context.Events.Add(newEvent);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetEvent), new { id = newEvent.Id }, newEvent);
-        }
-
-        // --- NEW CODE ---
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Event>> GetEvent(Guid id)
-        {
-            var ev = await _context.Events.FindAsync(id);
-
-            if (ev == null)
-            {
-                return NotFound();
-            }
-
-            return ev;
+            return Ok(new ApiResponse<Event> { Success = true, Data = newEvent });
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateEvent(Guid id, Event updatedEvent)
+        public async Task<ActionResult<ApiResponse<Event>>> UpdateEvent(Guid id, Event updatedEvent)
         {
             if (id != updatedEvent.Id)
             {
-                return BadRequest();
+                return BadRequest(new ApiResponse<object> { Success = false, Error = new { message = "ID mismatch" } });
             }
 
             _context.Entry(updatedEvent).State = EntityState.Modified;
@@ -71,7 +70,7 @@ namespace OrgManager.Api.Controllers
             {
                 if (!EventExists(id))
                 {
-                    return NotFound();
+                    return NotFound(new ApiResponse<object> { Success = false, Error = new { message = "Event not found" } });
                 }
                 else
                 {
@@ -79,22 +78,22 @@ namespace OrgManager.Api.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(new ApiResponse<Event> { Success = true, Data = updatedEvent });
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteEvent(Guid id)
+        public async Task<ActionResult<ApiResponse<string>>> DeleteEvent(Guid id)
         {
             var ev = await _context.Events.FindAsync(id);
             if (ev == null)
             {
-                return NotFound();
+                return NotFound(new ApiResponse<object> { Success = false, Error = new { message = "Event not found" } });
             }
 
             _context.Events.Remove(ev);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(new ApiResponse<string> { Success = true, Data = "Event deleted successfully" });
         }
 
         private bool EventExists(Guid id)

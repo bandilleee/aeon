@@ -1,5 +1,5 @@
 "use client";
-
+import { taskService } from "@/services/tasks.service"; 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
@@ -107,39 +107,72 @@ export function CreateTaskForm() {
   const selectedCollaborators = watch("collaboratorIds");
 
   /**
-   * Handle form submission
+   * Handle form submission (NOW CONNECTED TO C# BACKEND!)
    */
   const onSubmit = async (data: CreateTaskFormData) => {
     try {
       setIsSubmitting(true);
 
-      // TODO: Replace with actual API call to your C# backend
-      console.log("Creating task:", data);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // 1. Send the form data to our C# backend
+      const response = await taskService.createTask({
+        title: data.title,
+        description: data.description || "", // Provide empty string fallback
+        status: data.status,
+        priority: data.priority,
+        dueDate: data.dueDate || undefined, // Send undefined if empty
+        collaboratorIds: data.collaboratorIds || [],
+        eventId: data.eventId || undefined,
+        // Note: Our C# backend doesn't support collaborators or linked events yet,
+        // but we send the core task data!
+      });
 
-      // Show success modal
-      setShowSuccessModal(true);
+      // 2. Check if the C# bouncer approved it
+      if (response.success) {
+        setShowSuccessModal(true); // Show the nice green checkmark modal!
+      } else {
+        // If the backend threw an error (like a validation error), alert the user
+        alert(`Failed to save task: ${response.error?.message || "Unknown error"}`);
+      }
+
     } catch (error) {
       console.error("Failed to create task:", error);
+      alert("A network error occurred. Is your server running?");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   /**
-   * Save as draft (status = todo, no validation required)
+   * Save as draft (status = todo)
    */
   const handleSaveDraft = async () => {
     try {
       setIsSavingDraft(true);
 
       const currentData = watch();
+      
+      // We must have at least a title to save a draft
+      if (!currentData.title) {
+        alert("Please enter a title before saving a draft.");
+        return;
+      }
 
-      // TODO: Replace with actual API call
-      console.log("Saving draft:", currentData);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await taskService.createTask({
+        title: currentData.title,
+        description: currentData.description || "",
+        status: "todo", // Force status to todo for drafts
+        priority: currentData.priority || "medium",
+        dueDate: currentData.dueDate || undefined,
+        collaboratorIds: currentData.collaboratorIds || [],
+        eventId: currentData.eventId || undefined,
+      });
 
-      router.push("/dashboard/tasks");
+      if (response.success) {
+        router.push("/dashboard/tasks"); // Take them back to the list
+      } else {
+        alert(`Failed to save draft: ${response.error?.message || "Unknown error"}`);
+      }
+
     } catch (error) {
       console.error("Failed to save draft:", error);
     } finally {

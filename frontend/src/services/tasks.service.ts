@@ -1,35 +1,47 @@
 import { apiClient } from '@/lib/api-client';
 import type { Task, CreateTaskData } from '@/types/task.types';
 
+// 1. Define what our new C# comment looks like!
+export interface TaskComment {
+  id: string;
+  taskId: string;
+  content: string;
+  createdAt: string;
+  userId: string;
+  userDisplayName: string;
+  userInitials: string;
+}
+
 export const taskService = {
-  // 1. GET ALL: Read all tasks
   getAllTasks: async () => {
-    // Note: We use the apiClient.get method here!
-    const response = await apiClient.get<Task[]>('/api/tasks');
-    return response;
+    return await apiClient.get<Task[]>('/api/tasks');
   },
 
-  // 2. GET ONE: Read a specific task by ID
   getTaskById: async (id: string) => {
-    const response = await apiClient.get<Task>(`/api/tasks/${id}`);
-    return response;
+    return await apiClient.get<Task>(`/api/tasks/${id}`);
   },
 
-  // 3. CREATE: Make a new task
   createTask: async (data: CreateTaskData) => {
-    const response = await apiClient.post<Task>('/api/tasks', data);
-    return response;
+    return await apiClient.post<Task>('/api/tasks', data);
   },
 
-  // 4. UPDATE: Change an existing task
   updateTask: async (id: string, data: Partial<Task>) => {
-    const response = await apiClient.put<void>(`/api/tasks/${id}`, data);
-    return response;
+    return await apiClient.put<void>(`/api/tasks/${id}`, data);
   },
 
-  // 5. DELETE: Remove a task completely
   deleteTask: async (id: string) => {
-    const response = await apiClient.delete<void>(`/api/tasks/${id}`);
-    return response;
+    return await apiClient.delete<void>(`/api/tasks/${id}`);
+  },
+
+  // --- NEW COMMENT METHODS ---
+  
+  // Get all comments for a specific task
+  getTaskComments: async (taskId: string) => {
+    return await apiClient.get<TaskComment[]>(`/api/taskcomments/task/${taskId}`);
+  },
+
+  // Send a new comment to the database
+  addTaskComment: async (data: { taskId: string; content: string; userId: string; userDisplayName: string; userInitials: string }) => {
+    return await apiClient.post<TaskComment>('/api/taskcomments', data);
   }
 };
