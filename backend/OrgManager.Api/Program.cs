@@ -6,24 +6,30 @@ using OrgManager.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- NEW CORS CODE STARTS HERE ---
-// Tell the app to allow requests from our Next.js frontend
+// ==================== CORS ====================
+// Allow frontend to talk to backend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowNextJs", policy =>
     {
-        policy.WithOrigins("http://localhost:3000") // Your Next.js URL
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy.WithOrigins(
+            "http://localhost:3000",   // Next.js dev server
+            "http://127.0.0.1:3000"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
     });
 });
-// --- NEW CORS CODE ENDS HERE ---
 
+// ==================== CONTROLLERS ====================
 builder.Services.AddControllers();
 
+// ==================== DATABASE ====================
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=orgmanager.db"));
 
+// ==================== JWT AUTHENTICATION ====================
 var jwtSecret = builder.Configuration["JwtSettings:SecretKey"];
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -41,15 +47,36 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// ==================== SWAGGER (for testing) ====================
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
-// --- TELL THE APP TO USE CORS ---
-// This MUST go before UseAuthentication!
+// ==================== SEED DATABASE ====================
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DbInitializer.InitializeAsync(context);
+}
+
+// ==================== DEVELOPMENT: Enable Swagger ====================
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+// ==================== MIDDLEWARE PIPELINE ====================
+// Order matters! CORS must come before Auth
 app.UseCors("AllowNextJs");
 
-app.UseAuthentication(); 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+Console.WriteLine(" Aeon API is running on http://localhost:5073");
+Console.WriteLine(" Swagger UI: http://localhost:5073/swagger");
 
 app.Run();

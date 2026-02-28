@@ -2,14 +2,30 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import type { User } from "@/types/user.types";
-import type { LoginCredentials } from "@/types/auth.types";
+
+// Define User type inline (or import from types file)
+interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  displayName: string;
+  role: string;
+  status: string;
+  avatarUrl?: string;
+}
+
+interface LoginCredentials {
+  email: string;
+  password: string;
+  rememberMe?: boolean;
+}
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: LoginCredentials & { recaptchaToken?: string }) => Promise<{ 
+  login: (credentials: LoginCredentials) => Promise<{ 
     success: boolean;
     error?: string;
     requiresTwoFactor?: boolean; 
@@ -26,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize auth state from storage
+  // Initialize auth state from localStorage
   useEffect(() => {
     const initAuth = async () => {
       try {
@@ -38,6 +54,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error("Failed to initialize auth:", error);
+        // Clear corrupted data
+        localStorage.removeItem("aeon_user");
+        localStorage.removeItem("aeon_access_token");
       } finally {
         setIsLoading(false);
       }
@@ -46,9 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth();
   }, []);
 
-  const login = async (credentials: LoginCredentials & { recaptchaToken?: string }) => {
+  const login = async (credentials: LoginCredentials) => {
     try {
-      // NOTE: Base URL is the port. We manually append /api to the fetch path!
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5073";
       
       const response = await fetch(`${baseUrl}/api/auth/login`, {
@@ -60,51 +78,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }),
       });
 
+      // Handle errors
       if (!response.ok) {
-        // If it's a 401 Unauthorized, the backend usually sends a JSON error message.
+        let errorMessage = "Invalid email or password";
         try {
           const errorData = await response.json();
-          return { success: false, error: errorData.message || "Invalid email or password" };
+          errorMessage = errorData.message || errorMessage;
         } catch {
-          return { success: false, error: "Invalid email or password" };
+          // If can't parse error, use default message
         }
+        return { success: false, error: errorMessage };
       }
 
-      // Read the successful ApiResponse wrapper!
-      const apiResponse = await response.json();
+      // Parse successful response
+      const data = await response.json();
       
-      // If the backend wrapped it in { success: true, data: { ... } }
-      const token = apiResponse.data?.token || apiResponse.token;
-      const userData = apiResponse.data?.user || apiResponse.user;
+      // Backend sends: { Token: "...", User: {...} }
+      const token = data.Token || data.token;
+      const userData = data.User || data.user;
 
       if (!token || !userData) {
-         return { success: false, error: "Server returned an invalid response format." };
+        return { success: false, error: "Server returned invalid response" };
       }
 
-      // Save to storage
-      localStorage.setItem("aeon_user", JSON.stringify(userData));
+      // Transform user data to match our interface
+      const transformedUser: User = {
+        id: userData.Id || userData.id,
+        email: userData.Email || userData.email,
+        firstName: userData.FirstName || userData.firstName || "",
+        lastName: userData.LastName || userData.lastName || "",
+        displayName: userData.DisplayName || userData.displayName || userData.email,
+        role: userData.Role || userData.role || "member",
+        status: userData.Status || userData.status || "active",
+        avatarUrl: userData.AvatarUrl || userData.avatarUrl,
+      };
+
+      // Save to localStorage
+      localStorage.setItem("aeon_user", JSON.stringify(transformedUser));
       localStorage.setItem("aeon_access_token", token);
       
       if (credentials.rememberMe) {
         localStorage.setItem("aeon_remember_me", "true");
       }
 
-      // Set React state
-      setUser(userData);
+      // Update React state
+      setUser(transformedUser);
 
-      return {
-        success: true,
-        requiresTwoFactor: false, // You can hook this up to real TOTP logic later
-      };
+      return { success: true };
     } catch (error) {
       console.error("Login failed:", error);
-      return { success: false, error: "Network error. Is the server running?" };
+      return { success: false, error: "Network error. Is the backend server running?" };
     }
   };
 
   const logout = async () => {
     try {
-      // Clear auth data
       localStorage.removeItem("aeon_user");
       localStorage.removeItem("aeon_access_token");
       localStorage.removeItem("aeon_refresh_token");
@@ -118,14 +146,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const refreshSession = async () => {
-    try {
-      const refreshToken = localStorage.getItem("aeon_refresh_token");
-      if (!refreshToken) return;
-      // TODO: Implement actual refresh logic here when needed
-    } catch (error) {
-      console.error("Session refresh failed:", error);
-      await logout();
-    }
+    // TODO: Implement token refresh when needed
+    const refreshToken = localStorage.getItem("aeon_refresh_token");
+    if (!refreshToken) return;
   };
 
   const value: AuthContextType = {
