@@ -156,3 +156,6 @@ C:\Users\bandi\onedrive\documentos\projects\aeon\backend\OrgManager.Api\bin\Debu
 C:\Users\bandi\onedrive\documentos\projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\bandi\onedrive\documentos\projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
 C:\Users\bandi\onedrive\documentos\projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\BCrypt.Net-Next.dll
+C:\Users\bandi\onedrive\documentos\projects\aeon\backend\orgmanager.api\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\bandi\onedrive\documentos\projects\aeon\backend\orgmanager.api\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\bandi\onedrive\documentos\projects\aeon\backend\orgmanager.api\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll

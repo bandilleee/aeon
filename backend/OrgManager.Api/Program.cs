@@ -47,10 +47,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// ==================== SWAGGER (for testing) ====================
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
 var app = builder.Build();
 
 // ==================== SEED DATABASE ====================
@@ -58,13 +54,6 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await DbInitializer.InitializeAsync(context);
-}
-
-// ==================== DEVELOPMENT: Enable Swagger ====================
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
 
 // ==================== MIDDLEWARE PIPELINE ====================
@@ -76,7 +65,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-Console.WriteLine(" Aeon API is running on http://localhost:5073");
-Console.WriteLine(" Swagger UI: http://localhost:5073/swagger");
+Console.WriteLine("🚀 Aeon API is running on http://localhost:5073");
 
 app.Run();
