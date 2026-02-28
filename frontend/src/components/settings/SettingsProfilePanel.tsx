@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Textarea } from "@/components/ui";
-import { User, Mail, Camera, Save, CheckCircle } from "lucide-react";
-import { useEffect } from "react";
+import { User, Mail, Camera, Save, CheckCircle, Loader2 } from "lucide-react";
 import { settingsService } from "@/services/settings.service";
-import { Loader2 } from "lucide-react";
+import { useAuth } from '@/contexts/auth-context';
 
 // --- SMART VALIDATORS ---
 function validateName(name: string) {
@@ -38,17 +37,10 @@ function validatePhone(phone: string) {
   return phone.length === 15;
 }
 
-const INIT_PROFILE = {
-  displayName: "Jane Doe",
-  email: "jane@example.com",
-  phone: "+27 82 123 4567",
-  bio: "Community leader.",
-  avatarUrl: "",
-};
-
-const CURRENT_USER_ID = "user_1";
-
 export default function SettingsProfilePanel() {
+  const { user } = useAuth();
+  const currentUserId = user?.id || "user_1"; // Safe fallback
+
   const [profile, setProfile] = useState({ displayName: "", email: "", phone: "", bio: "", avatarUrl: "" });
   const [errors, setErrors] = useState({ displayName: "", email: "", phone: "" });
   
@@ -61,7 +53,7 @@ export default function SettingsProfilePanel() {
     async function loadSettings() {
       try {
         setIsLoading(true);
-        const response = await settingsService.getSettings(CURRENT_USER_ID);
+        const response = await settingsService.getSettings(currentUserId);
         if (response.success && response.data) {
           setProfile({
             displayName: response.data.displayName || "",
@@ -78,7 +70,7 @@ export default function SettingsProfilePanel() {
       }
     }
     loadSettings();
-  }, []);
+  }, [currentUserId]);
 
   function handleChange(field: string, value: string) {
     setProfile((prev) => ({ ...prev, [field]: value }));
@@ -119,7 +111,7 @@ export default function SettingsProfilePanel() {
 
     try {
       setSaving(true);
-      const response = await settingsService.updateProfile(CURRENT_USER_ID, profile);
+      const response = await settingsService.updateProfile(currentUserId, profile);
       
       if (response.success) {
         setSuccess(true);
@@ -146,7 +138,6 @@ export default function SettingsProfilePanel() {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
-      {/* Public Profile Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -164,7 +155,6 @@ export default function SettingsProfilePanel() {
                   <User className="h-10 w-10 text-zinc-600" />
                 )}
                 
-                {/* Hover overlay for avatar */}
                 <div 
                   className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity cursor-pointer"
                   onClick={() => document.getElementById("avatar-upload")?.click()}
@@ -196,7 +186,6 @@ export default function SettingsProfilePanel() {
         </CardContent>
       </Card>
 
-      {/* Contact Info Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -224,7 +213,6 @@ export default function SettingsProfilePanel() {
         </CardContent>
       </Card>
 
-      {/* Action Footer */}
       <div className="flex items-center justify-between pt-2">
         <div>
           {success && (

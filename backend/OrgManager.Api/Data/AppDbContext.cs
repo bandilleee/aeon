@@ -17,5 +17,7 @@ namespace OrgManager.Api.Data
         public DbSet<TaskComment> TaskComments { get; set; }
         public DbSet<Member> Members { get; set; }
         public DbSet<UserSettings> UserSettings { get; set; }
+        public DbSet<EventAttendee> EventAttendees { get; set; }
+
     }
 }

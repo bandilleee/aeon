@@ -5,27 +5,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { 
-  Mail, 
-  ArrowRight, 
-  ArrowLeft, 
-  Terminal, 
-  Send,
-  CheckCircle,
-  Clock
-} from "lucide-react";
-
+import { Mail, ArrowRight, ArrowLeft, Terminal, Send, CheckCircle, Clock } from "lucide-react";
 import { Button, Input } from "@/components/ui";
 import { Card, CardContent } from "@/components/ui/card";
+import { authService } from "@/services/auth.service"; // <-- Bridge!
 
-/**
- * Forgot password schema - just email
- */
 const forgotPasswordSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email is required")
-    .email("Please enter a valid email address"),
+  email: z.string().min(1, "Email is required").email("Please enter a valid email address"),
 });
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
@@ -36,31 +22,19 @@ export function ForgotPasswordForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<ForgotPasswordFormData>({
+  const { register, handleSubmit, formState: { errors } } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
-    defaultValues: {
-      email: "",
-    },
+    defaultValues: { email: "" },
     mode: "onBlur",
   });
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     try {
       setIsLoading(true);
-
-      // TODO: Replace with actual API call to your C# backend
-      console.log("Forgot password request:", data);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Always show success (security - don't reveal if email exists)
+      await authService.forgotPassword(data.email);
       setSubmittedEmail(data.email);
       setIsSubmitted(true);
     } catch (error) {
-      // Still show success for security reasons
       setSubmittedEmail(data.email);
       setIsSubmitted(true);
     } finally {
@@ -68,7 +42,7 @@ export function ForgotPasswordForm() {
     }
   };
 
-  // Success State - Email Sent
+  // ... keep the exact same JSX return logic below ...
   if (isSubmitted) {
     return (
       <div className="animate-fade-in">

@@ -1,72 +1,45 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  Terminal,
-  ArrowRight,
-  ArrowLeft,
-  Smartphone,
-  Copy,
-  Check,
-  AlertCircle,
-  QrCode,
-  RefreshCw,
-} from "lucide-react";
-
+import { Terminal, ArrowRight, ArrowLeft, Copy, Check, AlertCircle } from "lucide-react";
 import { Button, Input } from "@/components/ui";
 import { Card, CardContent } from "@/components/ui/card";
+import { authService } from "@/services/auth.service"; // <-- Bridge!
+import { useAuth } from '@/contexts/auth-context';
 
-/**
- * Verification code schema
- */
 const verifyCodeSchema = z.object({
-  code: z
-    .string()
-    .min(6, "Code must be 6 digits")
-    .max(6, "Code must be 6 digits")
-    .regex(/^\d+$/, "Code must contain only numbers"),
+  code: z.string().min(6, "Code must be 6 digits").max(6, "Code must be 6 digits").regex(/^\d+$/, "Code must contain only numbers"),
 });
 
 type VerifyCodeFormData = z.infer<typeof verifyCodeSchema>;
 
-/**
- * Mock QR code data - In production, this comes from your C# backend
- */
 const MOCK_2FA_DATA = {
-  secret: "JBSWY3DPEHPK3PXP", // Base32 encoded secret
+  secret: "JBSWY3DPEHPK3PXP", 
   qrCodeUrl: "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/Aeon:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Aeon",
-  otpauthUrl: "otpauth://totp/Aeon:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Aeon",
 };
 
 export function TwoFactorConfigure() {
   const router = useRouter();
+  const { user } = useAuth();
+  const currentUserId = user?.id || "user_1";
+  
   const [isLoading, setIsLoading] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [secretCopied, setSecretCopied] = useState(false);
-  const [qrData, setQrData] = useState(MOCK_2FA_DATA);
+  const [qrData] = useState(MOCK_2FA_DATA);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    watch,
-    setValue,
-  } = useForm<VerifyCodeFormData>({
+  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<VerifyCodeFormData>({
     resolver: zodResolver(verifyCodeSchema),
-    defaultValues: {
-      code: "",
-    },
+    defaultValues: { code: "" },
     mode: "onChange",
   });
 
   const codeValue = watch("code", "");
 
-  // Format code input (add space after 3 digits for readability)
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "").slice(0, 6);
     setValue("code", value);
@@ -77,36 +50,31 @@ export function TwoFactorConfigure() {
       await navigator.clipboard.writeText(qrData.secret);
       setSecretCopied(true);
       setTimeout(() => setSecretCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy:", err);
-    }
+    } catch (err) {}
   };
 
   const onSubmit = async (data: VerifyCodeFormData) => {
     try {
-      setIsVerifying(true);
+      setIsLoading(true);
       setServerError(null);
 
-      // TODO: Replace with actual API call to verify TOTP code
-      console.log("Verifying code:", data.code);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Mock verification - in production, backend validates the code
-      if (data.code === "123456") {
-        // Simulate invalid code for testing
-        setServerError("Invalid verification code. Please try again.");
+      // Call our real C# backend to verify TOTP
+      const response = await authService.verify2FA(currentUserId, data.code);
+      
+      if (!response.success) {
+        setServerError(response.error?.message || "Invalid verification code.");
         return;
       }
 
-      // Success - go to backup codes page
       router.push("/setup-2fa/backup-codes");
     } catch (error) {
       setServerError("Failed to verify code. Please try again.");
     } finally {
-      setIsVerifying(false);
+      setIsLoading(false);
     }
   };
 
+  // ... keep the exact same JSX return logic below ...
   return (
     <div className="animate-fade-in">
       {/* Logo */}
@@ -232,7 +200,7 @@ export function TwoFactorConfigure() {
             maxLength={6}
             className="text-center text-2xl tracking-[0.5em] font-mono"
             error={errors.code?.message}
-            disabled={isVerifying}
+            disabled={isLoading}
             {...register("code")}
             onChange={handleCodeChange}
           />
@@ -246,9 +214,9 @@ export function TwoFactorConfigure() {
           type="submit"
           className="w-full"
           size="lg"
-          isLoading={isVerifying}
+          isLoading={isLoading}
           disabled={codeValue.length !== 6}
-          rightIcon={!isVerifying && <ArrowRight className="h-4 w-4" />}
+          rightIcon={!isLoading && <ArrowRight className="h-4 w-4" />}
         >
           Verify and continue
         </Button>

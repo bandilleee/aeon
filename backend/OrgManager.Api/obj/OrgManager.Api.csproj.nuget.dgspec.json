@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\OrgManager.Api\\OrgManager.Api.csproj": {}
+    "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\orgmanager.api\\OrgManager.Api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\OrgManager.Api\\OrgManager.Api.csproj": {
+    "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\orgmanager.api\\OrgManager.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\OrgManager.Api\\OrgManager.Api.csproj",
+        "projectUniqueName": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\orgmanager.api\\OrgManager.Api.csproj",
         "projectName": "OrgManager.Api",
-        "projectPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\OrgManager.Api\\OrgManager.Api.csproj",
+        "projectPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\orgmanager.api\\OrgManager.Api.csproj",
         "packagesPath": "C:\\Users\\bandi\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\OrgManager.Api\\obj\\",
+        "outputPath": "C:\\Users\\bandi\\onedrive\\documentos\\projects\\aeon\\backend\\orgmanager.api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\bandi\\AppData\\Roaming\\NuGet\\NuGet.Config"

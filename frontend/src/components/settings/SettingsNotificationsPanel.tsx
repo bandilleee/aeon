@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, Button, Switch } from "@/components/ui";
-import { Bell, Calendar, ListChecks, Users, Mail, Save, CheckCircle } from "lucide-react";
-import { useEffect } from "react";
+import { Bell, Calendar, ListChecks, Users, Mail, Save, CheckCircle, Loader2 } from "lucide-react";
 import { settingsService } from "@/services/settings.service";
-import { Loader2 } from "lucide-react";
-
-const CURRENT_USER_ID = "user_1";
+import { useAuth } from '@/contexts/auth-context';
 
 export default function SettingsNotificationsPanel() {
+  const { user } = useAuth();
+  const currentUserId = user?.id || "user_1";
+
   const [notifications, setNotifications] = useState({
     emailNotifications: true, eventNotifications: true, taskNotifications: false, memberNotifications: true,
   });
@@ -22,7 +22,7 @@ export default function SettingsNotificationsPanel() {
     async function loadSettings() {
       try {
         setIsLoading(true);
-        const response = await settingsService.getSettings(CURRENT_USER_ID);
+        const response = await settingsService.getSettings(currentUserId);
         if (response.success && response.data) {
           setNotifications({
             emailNotifications: response.data.emailNotifications,
@@ -36,12 +36,12 @@ export default function SettingsNotificationsPanel() {
       }
     }
     loadSettings();
-  }, []);
+  }, [currentUserId]);
 
   async function handleSave() {
     try {
       setSaving(true);
-      const response = await settingsService.updateNotifications(CURRENT_USER_ID, notifications);
+      const response = await settingsService.updateNotifications(currentUserId, notifications);
       if (response.success) {
         setSuccess(true);
         setTimeout(() => setSuccess(false), 3000);
@@ -63,7 +63,6 @@ export default function SettingsNotificationsPanel() {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
-      {/* Communication Delivery Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -80,7 +79,6 @@ export default function SettingsNotificationsPanel() {
         </CardContent>
       </Card>
 
-      {/* Platform Alerts Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -89,7 +87,6 @@ export default function SettingsNotificationsPanel() {
         </CardHeader>
         <CardContent className="p-6">
           <div className="space-y-6">
-            
             <div className="flex items-start gap-3">
               <div className="p-2 bg-white/5 rounded-lg border border-white/5 mt-1 hidden sm:block">
                 <Calendar className="h-4 w-4 text-blue-400" />
@@ -135,10 +132,8 @@ export default function SettingsNotificationsPanel() {
                 />
               </div>
             </div>
-
           </div>
 
-          {/* Action Footer */}
           <div className="flex items-center justify-between pt-6 mt-4 border-t border-white/5">
             <div>
               {success && (

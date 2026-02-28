@@ -79,7 +79,7 @@ export function CreateUserModal({ isOpen, onClose, onSubmit }: CreateUserModalPr
     setIsSubmitting(true);
     try {
       await onSubmit({
-        ... formData,
+        ...formData,
         tags: formData.tags
           .split(",")
           .map((t) => t.trim())
@@ -87,7 +87,7 @@ export function CreateUserModal({ isOpen, onClose, onSubmit }: CreateUserModalPr
       });
       resetForm();
     } catch (error) {
-      console. error("Failed to create user:", error);
+      console.error("Failed to create user:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -160,6 +160,7 @@ export function CreateUserModal({ isOpen, onClose, onSubmit }: CreateUserModalPr
             />
           </div>
         </div>
+        
         {/* Role */}
         <div className="space-y-4">
           <h3 className="text-sm font-medium text-zinc-400">Role & Permissions</h3>
@@ -174,6 +175,7 @@ export function CreateUserModal({ isOpen, onClose, onSubmit }: CreateUserModalPr
             The selected role determines the default permissions for this user. 
           </p>
         </div>
+
         {/* Invite Settings */}
         <div className="space-y-4">
           <h3 className="text-sm font-medium text-zinc-400">Account Setup</h3>
@@ -182,6 +184,8 @@ export function CreateUserModal({ isOpen, onClose, onSubmit }: CreateUserModalPr
               <p className="text-sm text-zinc-200">Send email invitation</p>
               <p className="text-xs text-zinc-500">User will receive a link to set their password</p>
             </div>
+            
+            {/* FIXED TOGGLE BUTTON */}
             <button
               type="button"
               onClick={() => setFormData((prev) => ({ ...prev, sendInvite: !prev.sendInvite }))}
@@ -192,12 +196,13 @@ export function CreateUserModal({ isOpen, onClose, onSubmit }: CreateUserModalPr
             >
               <span
                 className={cn(
-                  "absolute top-1 w-4 h-4 bg-white rounded-full transition-transform",
-                  formData.sendInvite ? "translate-x-6" : "translate-x-1"
+                  "absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform",
+                  formData.sendInvite ? "translate-x-5" : "translate-x-0"
                 )}
               />
             </button>
           </div>
+          
           {!formData.sendInvite && (
             <div>
               <label className="block text-sm font-medium text-zinc-400 mb-2">
@@ -227,11 +232,14 @@ export function CreateUserModal({ isOpen, onClose, onSubmit }: CreateUserModalPr
               )}
             </div>
           )}
+          
           <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
             <div>
               <p className="text-sm text-zinc-200">Require password change</p>
               <p className="text-xs text-zinc-500">User must set a new password on first login</p>
             </div>
+            
+            {/* FIXED TOGGLE BUTTON */}
             <button
               type="button"
               onClick={() => setFormData((prev) => ({ ...prev, mustChangePassword: !prev.mustChangePassword }))}
@@ -242,13 +250,14 @@ export function CreateUserModal({ isOpen, onClose, onSubmit }: CreateUserModalPr
             >
               <span
                 className={cn(
-                  "absolute top-1 w-4 h-4 bg-white rounded-full transition-transform",
-                  formData.mustChangePassword ? "translate-x-6" : "translate-x-1"
+                  "absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform",
+                  formData.mustChangePassword ? "translate-x-5" : "translate-x-0"
                 )}
               />
             </button>
           </div>
         </div>
+
         {/* Notes & Tags */}
         <div className="space-y-4">
           <h3 className="text-sm font-medium text-zinc-400">Additional Info</h3>
@@ -274,6 +283,7 @@ export function CreateUserModal({ isOpen, onClose, onSubmit }: CreateUserModalPr
           </div>
         </div>
       </div>
+      
       {/* Actions */}
       <div className="flex gap-3 mt-6 pt-4 border-t border-white/5">
         <Button variant="secondary" className="flex-1" onClick={handleClose}>

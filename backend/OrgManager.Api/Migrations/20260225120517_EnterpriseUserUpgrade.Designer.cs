@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OrgManager.Api.Data;
 
@@ -10,9 +11,11 @@ using OrgManager.Api.Data;
 namespace OrgManager.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260225120517_EnterpriseUserUpgrade")]
+    partial class EnterpriseUserUpgrade
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.3");
@@ -21,12 +24,6 @@ namespace OrgManager.Api.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("ApprovedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ApprovedBy")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Category")
@@ -40,13 +37,6 @@ namespace OrgManager.Api.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("CreatedByUserJson")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("CurrentAttendees")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -55,18 +45,6 @@ namespace OrgManager.Api.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsVirtual")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Location")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("MaxAttendees")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("RejectionReason")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("RequiresRegistration")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("StartDate")
@@ -83,9 +61,6 @@ namespace OrgManager.Api.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("VirtualLink")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Visibility")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -93,41 +68,6 @@ namespace OrgManager.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Events");
-                });
-
-            modelBuilder.Entity("OrgManager.Api.Models.EventAttendee", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("CheckedInAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CheckedInBy")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("RegisteredAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UserJson")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("EventAttendees");
                 });
 
             modelBuilder.Entity("OrgManager.Api.Models.Member", b =>

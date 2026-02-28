@@ -3,14 +3,16 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import type { User } from "@/types/user.types";
-import type { LoginCredentials, AuthResponse } from "@/types/auth.types";
+import type { LoginCredentials } from "@/types/auth.types";
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginCredentials & { recaptchaToken?: string }) => Promise<{ 
-    requiresTwoFactor: boolean; 
+    success: boolean;
+    error?: string;
+    requiresTwoFactor?: boolean; 
     userId?: string;
   }>;
   logout: () => Promise<void>;
@@ -46,9 +48,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (credentials: LoginCredentials & { recaptchaToken?: string }) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5073/api";
+      // NOTE: Base URL is the port. We manually append /api to the fetch path!
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5073";
       
-      const response = await fetch(`${apiUrl}/auth/login`, {
+      const response = await fetch(`${baseUrl}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -57,27 +60,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }),
       });
 
-      // INSTEAD OF THROWING AN ERROR, WE RETURN IT SOFTLY
       if (!response.ok) {
-        const errorMessage = await response.text();
-        return { success: false, error: errorMessage || "Invalid email or password" };
+        // If it's a 401 Unauthorized, the backend usually sends a JSON error message.
+        try {
+          const errorData = await response.json();
+          return { success: false, error: errorData.message || "Invalid email or password" };
+        } catch {
+          return { success: false, error: "Invalid email or password" };
+        }
       }
 
-      const data = await response.json();
+      // Read the successful ApiResponse wrapper!
+      const apiResponse = await response.json();
+      
+      // If the backend wrapped it in { success: true, data: { ... } }
+      const token = apiResponse.data?.token || apiResponse.token;
+      const userData = apiResponse.data?.user || apiResponse.user;
 
-      localStorage.setItem("aeon_user", JSON.stringify(data.user));
-      localStorage.setItem("aeon_access_token", data.token);
+      if (!token || !userData) {
+         return { success: false, error: "Server returned an invalid response format." };
+      }
+
+      // Save to storage
+      localStorage.setItem("aeon_user", JSON.stringify(userData));
+      localStorage.setItem("aeon_access_token", token);
       
       if (credentials.rememberMe) {
         localStorage.setItem("aeon_remember_me", "true");
       }
 
-      setUser(data.user);
+      // Set React state
+      setUser(userData);
 
-      // Return success!
       return {
         success: true,
-        requiresTwoFactor: false,
+        requiresTwoFactor: false, // You can hook this up to real TOTP logic later
       };
     } catch (error) {
       console.error("Login failed:", error);
@@ -87,12 +104,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      // TODO: Call logout endpoint
-      // await fetch(`${API_CONFIG.BASE_URL}/auth/logout`, {
-      //   method: "POST",
-      //   headers: { Authorization: `Bearer ${token}` },
-      // });
-
       // Clear auth data
       localStorage.removeItem("aeon_user");
       localStorage.removeItem("aeon_access_token");
@@ -110,15 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const refreshToken = localStorage.getItem("aeon_refresh_token");
       if (!refreshToken) return;
-
-      // TODO: Call refresh endpoint
-      // const response = await fetch(`${API_CONFIG.BASE_URL}/auth/refresh`, {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ refreshToken }),
-      // });
-      
-      // Update tokens
+      // TODO: Implement actual refresh logic here when needed
     } catch (error) {
       console.error("Session refresh failed:", error);
       await logout();

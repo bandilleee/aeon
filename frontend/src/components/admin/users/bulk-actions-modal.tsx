@@ -12,12 +12,12 @@ interface BulkActionsModalProps {
   onClose: () => void;
   action: BulkAction | null;
   selectedUsers: AdminUser[];
-  onConfirm: (options?:  any) => void;
+  onConfirm: (options?: any) => void;
 }
 
 const roleOptions = [
-  { value: "community_leader", label:  "Community Leader" },
-  { value:  "moderator", label: "Moderator" },
+  { value: "community_leader", label: "Community Leader" },
+  { value: "moderator", label: "Moderator" },
   { value: "admin", label: "Admin" },
   { value: "viewer", label: "Viewer" },
 ];
@@ -40,14 +40,14 @@ export function BulkActionsModal({
       case "activate":
         return {
           title: "Activate Users",
-          description:  `Are you sure you want to activate ${selectedUsers. length} user(s)?`,
+          description: `Are you sure you want to activate ${selectedUsers.length} user(s)?`,
           confirmText: "Activate All",
           variant: "default" as const,
         };
       case "suspend":
         return {
           title: "Suspend Users",
-          description: `Are you sure you want to suspend ${selectedUsers. length} user(s)? They will be unable to access the platform.`,
+          description: `Are you sure you want to suspend ${selectedUsers.length} user(s)? They will be unable to access the platform.`,
           confirmText: "Suspend All",
           variant: "warning" as const,
           showReason: true,
@@ -62,15 +62,15 @@ export function BulkActionsModal({
         };
       case "reset_password":
         return {
-          title:  "Reset Passwords",
+          title: "Reset Passwords",
           description: `Send password reset emails to ${selectedUsers.length} user(s)?`,
           confirmText: "Send Reset Emails",
           variant: "default" as const,
         };
       case "enable_2fa":
         return {
-          title:  "Enforce Two-Factor Authentication",
-          description: `Enforce 2FA for ${selectedUsers.length} user(s)?  They will be required to set up 2FA on their next login.`,
+          title: "Enforce Two-Factor Authentication",
+          description: `Enforce 2FA for ${selectedUsers.length} user(s)? They will be required to set up 2FA on their next login.`,
           confirmText: "Enforce 2FA",
           variant: "default" as const,
         };
@@ -85,16 +85,16 @@ export function BulkActionsModal({
       case "export": 
         return {
           title: "Export Users",
-          description:  `Export data for ${selectedUsers. length} user(s) to CSV? `,
+          description: `Export data for ${selectedUsers.length} user(s) to CSV?`,
           confirmText: "Export",
           variant: "default" as const,
         };
       default:
         return {
           title: "Confirm Action",
-          description: `Perform action on ${selectedUsers. length} user(s)?`,
+          description: `Perform action on ${selectedUsers.length} user(s)?`,
           confirmText: "Confirm",
-          variant:  "default" as const,
+          variant: "default" as const,
         };
     }
   };
@@ -104,7 +104,7 @@ export function BulkActionsModal({
   const handleConfirm = async () => {
     setIsProcessing(true);
     try {
-      const options:  any = {};
+      const options: any = {};
       if (config.showReason) options.reason = reason;
       if (config.showRoleSelect) options.role = newRole;
       await onConfirm(options);
@@ -133,13 +133,19 @@ export function BulkActionsModal({
         {action !== "suspend" && action !== "deactivate" && (
           <p className="text-sm text-zinc-400">{config.description}</p>
         )}
+        
         {/* User List Preview */}
         <div className="space-y-2">
           <p className="text-xs text-zinc-500 uppercase tracking-wide">Selected Users</p>
           <div className="max-h-40 overflow-y-auto space-y-2 p-2 bg-white/5 rounded-lg border border-white/10">
             {selectedUsers.slice(0, 5).map((user) => {
-              const roleBadge = getRoleBadge(user.role);
-              const statusBadge = getStatusBadge(user.status);
+              // DEFENSIVE FALLBACKS
+              const safeRole = user.role?.toLowerCase() as any;
+              const safeStatus = user.status?.toLowerCase() as any;
+              
+              const roleBadge = getRoleBadge(safeRole) || { variant: "secondary", label: user.role || "Viewer" };
+              const statusBadge = getStatusBadge(safeStatus) || { variant: "secondary", label: user.status || "Active" };
+              
               return (
                 <div key={user.id} className="flex items-center justify-between py-1">
                   <div className="flex items-center gap-2">
@@ -149,10 +155,10 @@ export function BulkActionsModal({
                     <span className="text-sm text-zinc-300">{user.displayName}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={roleBadge.variant} className="text-[10px]">
+                    <Badge variant={roleBadge.variant as any} className="text-[10px]">
                       {roleBadge.label}
                     </Badge>
-                    <Badge variant={statusBadge.variant} className="text-[10px]">
+                    <Badge variant={statusBadge.variant as any} className="text-[10px]">
                       {statusBadge.label}
                     </Badge>
                   </div>
@@ -166,6 +172,7 @@ export function BulkActionsModal({
             )}
           </div>
         </div>
+
         {/* Reason Input */}
         {config.showReason && (
           <div>
@@ -179,6 +186,7 @@ export function BulkActionsModal({
             />
           </div>
         )}
+        
         {/* Role Select */}
         {config.showRoleSelect && (
           <Select
@@ -189,6 +197,7 @@ export function BulkActionsModal({
             onChange={(value) => setNewRole(value as SystemRole)}
           />
         )}
+        
         {/* Actions */}
         <div className="flex gap-3 pt-2">
           <Button variant="secondary" className="flex-1" onClick={onClose}>

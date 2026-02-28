@@ -18,18 +18,18 @@ interface UsersTableProps {
   onSelectionChange: (ids: string[]) => void;
   onSelectUser: (user: AdminUser) => void;
   selectedUserId?: string;
-  sort:  UserSort;
+  sort: UserSort;
   onSortChange: (sort: UserSort) => void;
 }
 
-function formatDate(dateString?:  string): string {
+function formatDate(dateString?: string): string {
   if (!dateString) return "Never";
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math. floor(diffMs / 86400000);
+  const diffDays = Math.floor(diffMs / 86400000);
   if (diffMins < 1) return "Just now";
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
@@ -45,15 +45,15 @@ export function UsersTable({
   selectedUserId,
   sort,
   onSortChange,
-}:  UsersTableProps) {
-  const allSelected = users.length > 0 && selectedIds. length === users.length;
+}: UsersTableProps) {
+  const allSelected = users.length > 0 && selectedIds.length === users.length;
   const someSelected = selectedIds.length > 0 && selectedIds.length < users.length;
 
   const handleSelectAll = () => {
     if (allSelected) {
       onSelectionChange([]);
     } else {
-      onSelectionChange(users. map((u) => u.id));
+      onSelectionChange(users.map((u) => u.id));
     }
   };
 
@@ -67,9 +67,9 @@ export function UsersTable({
 
   const handleSort = (field: UserSortField) => {
     if (sort.field === field) {
-      onSortChange({ field, direction: sort. direction === "asc" ?  "desc" : "asc" });
+      onSortChange({ field, direction: sort.direction === "asc" ? "desc" : "asc" });
     } else {
-      onSortChange({ field, direction:  "asc" });
+      onSortChange({ field, direction: "asc" });
     }
   };
 
@@ -88,7 +88,7 @@ export function UsersTable({
         <CardContent className="p-12 text-center">
           <Shield className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-zinc-200 mb-2">No users found</h3>
-          <p className="text-sm text-zinc-500">Try adjusting your filters or add a new user. </p>
+          <p className="text-sm text-zinc-500">Try adjusting your filters or add a new user.</p>
         </CardContent>
       </Card>
     );
@@ -155,8 +155,13 @@ export function UsersTable({
             </thead>
             <tbody>
               {users.map((user) => {
-                const roleBadge = getRoleBadge(user.role);
-                const statusBadge = getStatusBadge(user.status);
+                // DEFENSIVE FALLBACKS ADDED HERE
+                const safeRole = user.role?.toLowerCase() as any;
+                const safeStatus = user.status?.toLowerCase() as any;
+                
+                const roleBadge = getRoleBadge(safeRole) || { variant: "secondary", label: user.role || "Viewer" };
+                const statusBadge = getStatusBadge(safeStatus) || { variant: "secondary", label: user.status || "Active" };
+                
                 const isSelected = selectedUserId === user.id;
                 const isChecked = selectedIds.includes(user.id);
                 return (
@@ -195,11 +200,11 @@ export function UsersTable({
                       </div>
                     </td>
                     <td className="p-4">
-                      <Badge variant={roleBadge.variant}>{roleBadge. label}</Badge>
+                      <Badge variant={roleBadge.variant as any}>{roleBadge.label}</Badge>
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-2">
-                        <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
+                        <Badge variant={statusBadge.variant as any}>{statusBadge.label}</Badge>
                         {user.status === "locked" && (
                           <AlertTriangle className="h-4 w-4 text-red-400" />
                         )}
@@ -214,7 +219,7 @@ export function UsersTable({
                           )}
                         />
                         <span className="text-xs text-zinc-500">
-                          {user.twoFactorStatus === "disabled" ? "No 2FA" :  "2FA"}
+                          {user.twoFactorStatus === "disabled" ? "No 2FA" : "2FA"}
                         </span>
                       </div>
                     </td>

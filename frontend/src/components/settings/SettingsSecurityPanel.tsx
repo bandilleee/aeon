@@ -1,19 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, Button, Input } from "@/components/ui";
-import { Lock, ShieldCheck, KeyRound, CheckCircle, Save, Smartphone } from "lucide-react";
+import { Lock, ShieldCheck, KeyRound, CheckCircle, Save, Smartphone, Loader2 } from "lucide-react";
 import { validatePassword } from "@/lib/leader-settings-validation";
-import { useEffect } from "react";
 import { settingsService } from "@/services/settings.service";
-import { Loader2 } from "lucide-react";
-
-const CURRENT_USER_ID = "user_1";
-
-// Demo code for 2FA enabled or not
-const DEMO_TWO_FA = false;
+import { useAuth } from '@/contexts/auth-context';
 
 export default function SettingsSecurityPanel() {
+  const { user } = useAuth();
+  const currentUserId = user?.id || "user_1";
+
   const [security, setSecurity] = useState({ password: "", newPassword: "", confirmPassword: "" });
   const [errors, setErrors] = useState({ password: "", newPassword: "", confirmPassword: "" });
   const [success, setSuccess] = useState(false);
@@ -27,7 +24,7 @@ export default function SettingsSecurityPanel() {
     async function loadSettings() {
       try {
         setIsLoading(true);
-        const response = await settingsService.getSettings(CURRENT_USER_ID);
+        const response = await settingsService.getSettings(currentUserId);
         if (response.success && response.data) {
           setTwofaEnabled(response.data.twoFactorEnabled);
         }
@@ -36,7 +33,7 @@ export default function SettingsSecurityPanel() {
       }
     }
     loadSettings();
-  }, []);
+  }, [currentUserId]);
 
   async function handlePasswordChange() {
     let errs = { password: "", newPassword: "", confirmPassword: "" };
@@ -52,7 +49,7 @@ export default function SettingsSecurityPanel() {
 
     try {
       setIsSubmitting(true);
-      const response = await settingsService.changePassword(CURRENT_USER_ID, {
+      const response = await settingsService.changePassword(currentUserId, {
         currentPassword: security.password,
         newPassword: security.newPassword
       });
@@ -71,7 +68,7 @@ export default function SettingsSecurityPanel() {
     try {
       setUpdating2FA(true);
       const newState = !twofaEnabled;
-      const response = await settingsService.toggle2FA(CURRENT_USER_ID, newState);
+      const response = await settingsService.toggle2FA(currentUserId, newState);
       
       if (response.success) {
         setTwofaEnabled(newState);
@@ -93,7 +90,6 @@ export default function SettingsSecurityPanel() {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
-      {/* Change Password Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -133,7 +129,6 @@ export default function SettingsSecurityPanel() {
               />
             </div>
 
-            {/* Action Footer for Password */}
             <div className="flex items-center justify-between pt-4 border-t border-white/5">
               <div>
                 {success && (
@@ -155,7 +150,6 @@ export default function SettingsSecurityPanel() {
         </CardContent>
       </Card>
 
-      {/* Two-Factor Authentication Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -163,9 +157,7 @@ export default function SettingsSecurityPanel() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          
           <div className="bg-zinc-900/50 border border-white/5 rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
-            
             <div className="flex items-start gap-4">
               <div className={`p-3 rounded-full border ${twofaEnabled ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-white/5 border-white/10'}`}>
                 {twofaEnabled ? <KeyRound className="h-6 w-6 text-emerald-400" /> : <Smartphone className="h-6 w-6 text-zinc-400" />}
@@ -195,7 +187,6 @@ export default function SettingsSecurityPanel() {
                 {twofaEnabled ? "Disable 2FA" : "Enable 2FA"}
               </Button>
             </div>
-
           </div>
         </CardContent>
       </Card>

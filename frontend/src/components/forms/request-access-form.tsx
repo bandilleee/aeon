@@ -5,19 +5,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  Mail,
-  User,
-  ArrowRight,
-  ArrowLeft,
-  CheckCircle,
-  Terminal,
-  Info,
-} from "lucide-react";
-
+import { Mail, User, ArrowRight, ArrowLeft, CheckCircle, Terminal, Info } from "lucide-react";
 import { Button, Input, Checkbox } from "@/components/ui";
 import { Card, CardContent } from "@/components/ui/card";
 import { requestAccessSchema, type RequestAccessFormData } from "@/lib/validations";
+import { authService } from "@/services/auth.service"; // <-- Bridge!
 
 export function RequestAccessForm() {
   const router = useRouter();
@@ -25,20 +17,9 @@ export function RequestAccessForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    watch,
-  } = useForm<RequestAccessFormData>({
+  const { register, handleSubmit, formState: { errors }, watch } = useForm<RequestAccessFormData>({
     resolver: zodResolver(requestAccessSchema),
-    defaultValues:  {
-      firstName: "",
-      lastName: "",
-      email: "",
-      reason: "",
-      agreeToTerms: false,
-    },
+    defaultValues:  { firstName: "", lastName: "", email: "", reason: "", agreeToTerms: false },
     mode: "onBlur",
   });
 
@@ -49,8 +30,13 @@ export function RequestAccessForm() {
       setIsLoading(true);
       setServerError(null);
 
-      console.log("Access request data:", data);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Call our real C# backend endpoint
+      await authService.requestAccess({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        reason: data.reason
+      });
 
       setIsSubmitted(true);
     } catch (error) {
@@ -60,6 +46,7 @@ export function RequestAccessForm() {
     }
   };
 
+  // ... keep the rest of your EXACT SAME return jsx ...
   // Success State
   if (isSubmitted) {
     return (

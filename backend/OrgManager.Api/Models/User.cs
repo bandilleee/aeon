@@ -2,7 +2,7 @@ namespace OrgManager.Api.Models
 {
     public class User
     {
-        // "Guid" is C#'s way of making a long, unique string of characters for an ID
+        // Your existing fields
         public Guid Id { get; set; } 
         
         public string Email { get; set; } = string.Empty;
@@ -11,15 +11,33 @@ namespace OrgManager.Api.Models
         public string LastName { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
         
-        // The "?" means this is optional. A user might not have a profile picture yet!
         public string? AvatarUrl { get; set; } 
         
         public string Role { get; set; } = "member";
         public string Status { get; set; } = "pending";
         
-        // "DateTime" is the specific C# format for handling dates and times
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public DateTime? LastLoginAt { get; set; }
+
+        // --- NEW ENTERPRISE ADMIN FIELDS ---
+        public string Phone { get; set; } = string.Empty;
+        public string TwoFactorStatus { get; set; } = "disabled";
+        public string Notes { get; set; } = string.Empty;
+        
+        // We store complex UI objects as simple strings in SQLite
+        public string Tags { get; set; } = string.Empty; 
+        public string Permissions { get; set; } = "{}"; 
+        public bool CustomPermissions { get; set; } = false;
+
+        public string? StatusReason { get; set; }
+        public DateTime? StatusChangedAt { get; set; }
+        
+        public int FailedLoginAttempts { get; set; } = 0;
+        public int LoginCount { get; set; } = 0;
+        public DateTime? LastActiveAt { get; set; }
+        
+        public bool MustChangePassword { get; set; } = false;
+        public DateTime? PasswordLastChanged { get; set; }
     }
 }
