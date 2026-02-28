@@ -3,6 +3,7 @@ import { AdminProtectedRoute } from "@/components/auth/admin-protected-route";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
 import {
   Terminal,
   Shield,
@@ -73,15 +74,6 @@ const adminNavSections: NavSection[] = [
   },
 ];
 
-/**
- * Mock admin user
- */
-const adminUser = {
-  name: "Sarah Mitchell",
-  email: "sarah. admin@aeon.com",
-  role: "Administrator",
-  initials: "SM",
-};
 
 /**
  * Mock notifications
@@ -139,6 +131,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const commandInputRef = useRef<HTMLInputElement>(null);
 
   const unreadCount = notifications.filter((n) => n.unread).length;
+
+  // Get real user from auth context
+const { user } = useAuth();
+
+// Compute display values from real user
+const adminUser = {
+  name: user?.displayName || user?.email?.split('@')[0] || 'Admin',
+  email: user?.email || '',
+  role: user?.role === 'admin' ? 'Administrator' : 'User',
+  initials: user?.displayName 
+    ? user.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : (user?.email?.slice(0, 2).toUpperCase() || 'AD'),
+};
 
   // Close dropdowns when clicking outside
   useEffect(() => {

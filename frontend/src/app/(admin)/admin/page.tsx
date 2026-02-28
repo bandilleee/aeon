@@ -1,121 +1,52 @@
 "use client";
+
+import { useState, useEffect } from "react";
 import {
   Users,
   UserPlus,
   ListChecks,
   FileText,
   Calendar,
-  TrendingUp,
   ShieldCheck,
   Plus,
   ArrowRight,
-  CheckCircle2,
   Cog,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Avatar, AvatarFallback } from "@/components/ui";
 import { cn } from "@/lib/utils";
-
-// --- Stats panel as cards [same card/data layout style as dashboard] ---
-const stats = [
-  {
-    title: "Total Users",
-    value: 1723,
-    change: "+12 this week",
-    changeType: "positive",
-    icon: Users,
-    iconColor: "bg-blue-500/10 text-blue-300"
-  },
-  {
-    title: "Access Requests",
-    value: 5,
-    change: "+2 today",
-    changeType: "neutral",
-    icon: UserPlus,
-    iconColor: "bg-violet-500/10 text-violet-400"
-  },
-  {
-    title: "Event Approvals",
-    value: 3,
-    change: "",
-    changeType: "neutral",
-    icon: ListChecks,
-    iconColor: "bg-amber-500/10 text-amber-400"
-  },
-  {
-    title: "Audit Activity",
-    value: 242,
-    change: "",
-    changeType: "neutral",
-    icon: FileText,
-    iconColor: "bg-zinc-500/10 text-zinc-300"
-  },
-];
-
-const activities = [
-  {
-    title: "Access granted",
-    description: "Sarah Johnson approved a new user request",
-    time: "2 min ago",
-    icon: ShieldCheck,
-    iconBg: "bg-violet-500/10 text-violet-400",
-  },
-  {
-    title: "Event created",
-    description: 'Admin created "Security Roundtable"',
-    time: "11 min ago",
-    icon: Calendar,
-    iconBg: "bg-blue-500/10 text-blue-400",
-  },
-  {
-    title: "Audit triggered",
-    description: "Michael Lee escalated an audit log incident",
-    time: "30 min ago",
-    icon: FileText,
-    iconBg: "bg-zinc-500/10 text-zinc-300",
-  },
-  {
-    title: "User deactivated",
-    description: "Admin disabled user Michael N.",
-    time: "41 min ago",
-    icon: Users,
-    iconBg: "bg-blue-500/10 text-blue-400",
-  },
-];
-
-const requests = [
-  {
-    name: "Jacob Mensah",
-    avatar: "JM",
-    type: "Join",
-    status: "Pending",
-    info: "Marketing Team",
-    since: "3m"
-  },
-  {
-    name: "Anele Sithole",
-    avatar: "AS",
-    type: "Join",
-    status: "Pending",
-    info: "Tech Group",
-    since: "11m"
-  },
-  {
-    name: "Linda van Rooyen",
-    avatar: "LR",
-    type: "Join",
-    status: "Pending",
-    info: "Events Lead",
-    since: "15m"
-  },
-];
+import { useAuth } from "@/contexts/auth-context";
+import { adminDashboardService, DashboardStats } from "@/services/admin-dashboard.service";
 
 // --- Admin Overview Page ---
 export default function AdminOverviewPage() {
-  // Optional: use auth/context for personalized name, etc.
-  const user = { firstName: "Bandile" };
+  const { user } = useAuth();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Greeting for admin (optional)
+  // Fetch real stats from backend
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        setIsLoading(true);
+        const response = await adminDashboardService.getStats();
+        if (response.success && response.data) {
+          setStats(response.data);
+        }
+      } catch (error) {
+        console.error("Failed to load dashboard stats:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadStats();
+  }, []);
+
+  // Get user's first name for greeting
+  const firstName = user?.displayName?.split(' ')[0] || user?.firstName || 'Admin';
+
+  // Greeting based on time of day
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -123,16 +54,62 @@ export default function AdminOverviewPage() {
     return "Good evening";
   };
 
+  // Build stats cards from real data
+  const statsCards = stats ? [
+    {
+      title: "Total Users",
+      value: stats.users.total,
+      change: `${stats.users.active} active`,
+      changeType: "positive" as const,
+      icon: Users,
+      iconColor: "bg-blue-500/10 text-blue-300"
+    },
+    {
+      title: "Pending Users",
+      value: stats.users.pending,
+      change: stats.users.pending > 0 ? "Needs attention" : "All clear",
+      changeType: stats.users.pending > 0 ? "neutral" as const : "positive" as const,
+      icon: UserPlus,
+      iconColor: "bg-violet-500/10 text-violet-400"
+    },
+    {
+      title: "Event Approvals",
+      value: stats.events.pending,
+      change: `${stats.events.total} total events`,
+      changeType: "neutral" as const,
+      icon: ListChecks,
+      iconColor: "bg-amber-500/10 text-amber-400"
+    },
+    {
+      title: "Tasks",
+      value: stats.tasks.total,
+      change: `${stats.tasks.completed} completed`,
+      changeType: "neutral" as const,
+      icon: FileText,
+      iconColor: "bg-zinc-500/10 text-zinc-300"
+    },
+  ] : [];
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin mb-4 text-violet-500" />
+        <p className="text-zinc-400">Loading dashboard...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 md:p-8 space-y-10">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white tracking-tight mb-2">
-            {getGreeting()}, {user.firstName}
+            {getGreeting()}, {firstName}
           </h1>
           <p className="text-sm text-zinc-500">
-            Here’s your technical command center for AEON.
+            Here's your technical command center for AEON.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -142,10 +119,10 @@ export default function AdminOverviewPage() {
               Audit Log
             </Button>
           </Link>
-          <Link href="/admin/access-requests">
+          <Link href="/admin/users">
             <Button size="sm">
               <Plus className="h-4 w-4 mr-2" />
-              Quick Access
+              Add User
             </Button>
           </Link>
         </div>
@@ -153,7 +130,7 @@ export default function AdminOverviewPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map(card => (
+        {statsCards.map(card => (
           <Card key={card.title}>
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
@@ -182,14 +159,14 @@ export default function AdminOverviewPage() {
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Activity */}
+        {/* Recent Users */}
         <div className="lg:col-span-2">
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle>Recent Activity</CardTitle>
+                <CardTitle>Recent Users</CardTitle>
                 <Link
-                  href="/admin/audit-logs"
+                  href="/admin/users"
                   className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
                 >
                   View all
@@ -198,36 +175,45 @@ export default function AdminOverviewPage() {
             </CardHeader>
             <CardContent className="p-2">
               <div className="space-y-1">
-                {activities.map((a, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-start gap-4 p-4 hover:bg-white/[0.02] rounded-lg transition-colors cursor-pointer"
-                  >
-                    <div className={cn("p-2 rounded-lg", a.iconBg)}>
-                      <a.icon className="h-4 w-4" />
+                {stats?.recent.users && stats.recent.users.length > 0 ? (
+                  stats.recent.users.map((u) => (
+                    <div
+                      key={u.id}
+                      className="flex items-start gap-4 p-4 hover:bg-white/[0.02] rounded-lg transition-colors"
+                    >
+                      <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
+                        <Users className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-zinc-200 font-medium">{u.displayName}</p>
+                        <p className="text-xs text-zinc-500 mt-0.5">
+                          {u.email} • {u.role}
+                        </p>
+                      </div>
+                      <Badge 
+                        variant={u.status === "active" ? "success" : "warning"}
+                        className="text-xs"
+                      >
+                        {u.status}
+                      </Badge>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-zinc-200 font-medium">{a.title}</p>
-                      <p className="text-xs text-zinc-500 mt-0.5">
-                        {a.description}
-                      </p>
-                    </div>
-                    <span className="text-xs text-zinc-600 whitespace-nowrap">{a.time}</span>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-sm text-zinc-500 p-4">No users yet</p>
+                )}
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Access Requests */}
+        {/* Pending Event Approvals */}
         <div>
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle>Pending Access Requests</CardTitle>
+                <CardTitle>Pending Approvals</CardTitle>
                 <Link
-                  href="/admin/access-requests"
+                  href="/admin/event-approvals"
                   className="text-xs text-zinc-500 hover:text-violet-300 transition-colors"
                 >
                   Manage
@@ -235,22 +221,29 @@ export default function AdminOverviewPage() {
               </div>
             </CardHeader>
             <CardContent className="p-4 pt-2 space-y-3">
-              {requests.map((r, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-4 p-4 bg-zinc-900/50 border border-white/5 rounded-lg hover:border-violet-800/80 transition-colors cursor-pointer"
-                >
-                  <Avatar className="h-9 w-9 text-base">
-                    <AvatarFallback className="bg-violet-700 text-white">{r.avatar}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="text-zinc-100 font-semibold">{r.name}</div>
-                    <div className="text-xs text-zinc-500">{r.info} • {r.type}</div>
+              {stats?.pendingApprovals && stats.pendingApprovals.length > 0 ? (
+                stats.pendingApprovals.map((event) => (
+                  <div
+                    key={event.id}
+                    className="flex items-center gap-4 p-4 bg-zinc-900/50 border border-white/5 rounded-lg hover:border-violet-800/80 transition-colors cursor-pointer"
+                  >
+                    <div className="p-2 rounded-lg bg-amber-500/10">
+                      <Calendar className="h-4 w-4 text-amber-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-zinc-100 font-semibold truncate">{event.title}</div>
+                      <div className="text-xs text-zinc-500">{event.category}</div>
+                    </div>
+                    <Badge variant="warning" className="rounded-full">Pending</Badge>
                   </div>
-                  <Badge variant="info" className="ml-auto rounded-full bg-violet-800/60 border-violet-700/80">{r.status}</Badge>
-                  <div className="text-xs text-zinc-500 w-12 text-right">{r.since} ago</div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <ShieldCheck className="h-8 w-8 text-emerald-500 mb-2" />
+                  <p className="text-sm text-zinc-400">All caught up!</p>
+                  <p className="text-xs text-zinc-600">No pending approvals</p>
                 </div>
-              ))}
+              )}
             </CardContent>
           </Card>
         </div>
@@ -261,22 +254,22 @@ export default function AdminOverviewPage() {
         <h2 className="text-lg font-medium text-zinc-200 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <QuickAction
-            title="Approve Access"
-            description="Approve user or leader access"
-            href="/admin/access-requests"
-            icon={UserPlus}
+            title="Manage Users"
+            description={`${stats?.users.total || 0} total users`}
+            href="/admin/users"
+            icon={Users}
           />
           <QuickAction
-            title="Approve Events"
-            description="Review and approve scheduled events"
+            title="Event Approvals"
+            description={`${stats?.events.pending || 0} pending`}
             href="/admin/event-approvals"
             icon={Calendar}
           />
           <QuickAction
-            title="User Management"
-            description="See all users and roles"
-            href="/admin/users"
-            icon={Users}
+            title="Audit Logs"
+            description="View system activity"
+            href="/admin/audit-logs"
+            icon={FileText}
           />
           <QuickAction
             title="System Settings"
@@ -289,7 +282,7 @@ export default function AdminOverviewPage() {
 
       {/* Footer */}
       <footer className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-zinc-600">
-        <p>© 2024 Aeon Admin. Engineered by Bandile Ndlovu.</p>
+        <p>© {new Date().getFullYear()} Aeon Admin. Engineered by Bandile Ndlovu.</p>
         <div className="flex gap-6">
           <a href="#" className="hover:text-zinc-400 transition-colors">
             Help
@@ -306,7 +299,7 @@ export default function AdminOverviewPage() {
   );
 }
 
-// --- QuickAction block reused, matches your dashboard style ---
+// --- QuickAction block ---
 function QuickAction({
   title,
   description,

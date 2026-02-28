@@ -25,6 +25,7 @@ namespace OrgManager.Api.Controllers
             var totalUsers = await _context.Users.CountAsync();
             var activeUsers = await _context.Users.CountAsync(u => u.Status == "active");
             var pendingUsers = await _context.Users.CountAsync(u => u.Status == "pending");
+            var adminCount = await _context.Users.CountAsync(u => u.Role == "admin");
 
             // Event stats
             var totalEvents = await _context.Events.CountAsync();
@@ -35,20 +36,21 @@ namespace OrgManager.Api.Controllers
 
             // Task stats
             var totalTasks = await _context.Tasks.CountAsync();
-            var completedTasks = await _context.Tasks.CountAsync(t => t.Status == "completed");
+            var todoTasks = await _context.Tasks.CountAsync(t => t.Status == "todo");
             var inProgressTasks = await _context.Tasks.CountAsync(t => t.Status == "in_progress");
+            var completedTasks = await _context.Tasks.CountAsync(t => t.Status == "completed");
 
             // Member stats
             var totalMembers = await _context.Members.CountAsync();
             var activeMembers = await _context.Members.CountAsync(m => m.Status == "active");
 
-            // Recent activity (last 5 users created)
+            // Recent users (last 5)
             var recentUsers = await _context.Users
                 .OrderByDescending(u => u.CreatedAt)
                 .Take(5)
                 .Select(u => new {
                     id = u.Id.ToString(),
-                    displayName = u.DisplayName,
+                    displayName = string.IsNullOrEmpty(u.DisplayName) ? u.Email : u.DisplayName,
                     email = u.Email,
                     role = u.Role,
                     status = u.Status,
@@ -56,7 +58,7 @@ namespace OrgManager.Api.Controllers
                 })
                 .ToListAsync();
 
-            // Recent events
+            // Recent events (last 5)
             var recentEvents = await _context.Events
                 .OrderByDescending(e => e.CreatedAt)
                 .Take(5)
@@ -64,7 +66,21 @@ namespace OrgManager.Api.Controllers
                     id = e.Id.ToString(),
                     title = e.Title,
                     status = e.Status,
+                    category = e.Category,
                     startDate = e.StartDate,
+                    createdAt = e.CreatedAt
+                })
+                .ToListAsync();
+
+            // Pending approvals (events waiting for review)
+            var pendingApprovals = await _context.Events
+                .Where(e => e.Status == "pending_approval")
+                .OrderByDescending(e => e.CreatedAt)
+                .Take(5)
+                .Select(e => new {
+                    id = e.Id.ToString(),
+                    title = e.Title,
+                    category = e.Category,
                     createdAt = e.CreatedAt
                 })
                 .ToListAsync();
@@ -73,7 +89,8 @@ namespace OrgManager.Api.Controllers
                 users = new {
                     total = totalUsers,
                     active = activeUsers,
-                    pending = pendingUsers
+                    pending = pendingUsers,
+                    admins = adminCount
                 },
                 events = new {
                     total = totalEvents,
@@ -83,8 +100,9 @@ namespace OrgManager.Api.Controllers
                 },
                 tasks = new {
                     total = totalTasks,
-                    completed = completedTasks,
-                    inProgress = inProgressTasks
+                    todo = todoTasks,
+                    inProgress = inProgressTasks,
+                    completed = completedTasks
                 },
                 members = new {
                     total = totalMembers,
@@ -93,7 +111,8 @@ namespace OrgManager.Api.Controllers
                 recent = new {
                     users = recentUsers,
                     events = recentEvents
-                }
+                },
+                pendingApprovals = pendingApprovals
             };
 
             return Ok(new ApiResponse<object> { Success = true, Data = stats });

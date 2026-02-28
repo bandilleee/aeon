@@ -5,6 +5,7 @@ export interface DashboardStats {
     total: number;
     active: number;
     pending: number;
+    admins: number;
   };
   events: {
     total: number;
@@ -14,8 +15,9 @@ export interface DashboardStats {
   };
   tasks: {
     total: number;
-    completed: number;
+    todo: number;
     inProgress: number;
+    completed: number;
   };
   members: {
     total: number;
@@ -34,10 +36,17 @@ export interface DashboardStats {
       id: string;
       title: string;
       status: string;
+      category: string;
       startDate: string;
       createdAt: string;
     }>;
   };
+  pendingApprovals: Array<{
+    id: string;
+    title: string;
+    category: string;
+    createdAt: string;
+  }>;
 }
 
 export const adminDashboardService = {
