@@ -7,13 +7,12 @@ using OrgManager.Api.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // ==================== CORS ====================
-// Allow frontend to talk to backend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowNextJs", policy =>
     {
         policy.WithOrigins(
-            "http://localhost:3000",   // Next.js dev server
+            "http://localhost:3000",
             "http://127.0.0.1:3000"
         )
         .AllowAnyHeader()
@@ -57,7 +56,6 @@ using (var scope = app.Services.CreateScope())
 }
 
 // ==================== MIDDLEWARE PIPELINE ====================
-// Order matters! CORS must come before Auth
 app.UseCors("AllowNextJs");
 
 app.UseAuthentication();

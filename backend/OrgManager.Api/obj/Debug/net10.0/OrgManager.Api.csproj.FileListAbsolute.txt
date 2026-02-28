@@ -7,7 +7,6 @@ C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\bin\Debu
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\OrgManager.Api.dll
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\OrgManager.Api.pdb
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\Humanizer.dll
-C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\Microsoft.AspNetCore.OpenApi.dll
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\Microsoft.Build.Framework.dll
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\Microsoft.CodeAnalysis.dll
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\Microsoft.CodeAnalysis.CSharp.dll
@@ -22,7 +21,6 @@ C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\bin\Debu
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Relational.dll
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Sqlite.dll
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\Microsoft.Extensions.DependencyModel.dll
-C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\Microsoft.OpenApi.dll
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\Microsoft.VisualStudio.SolutionPersistence.dll
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\Mono.TextTemplating.dll
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\Newtonsoft.Json.dll
@@ -129,7 +127,6 @@ C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\obj\Debu
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\obj\Debug\net10.0\OrgManager.Api.AssemblyInfoInputs.cache
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\obj\Debug\net10.0\OrgManager.Api.AssemblyInfo.cs
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\obj\Debug\net10.0\OrgManager.Api.csproj.CoreCompileInputs.cache
-C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\obj\Debug\net10.0\OrgManager.Api.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\obj\Debug\net10.0\OrgManager.Api.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\obj\Debug\net10.0\OrgManager.Api.sourcelink.json
 C:\Users\bandi\OneDrive\Documentos\Projects\aeon\backend\OrgManager.Api\obj\Debug\net10.0\rjimswa.dswa.cache.json
@@ -156,6 +153,3 @@ C:\Users\bandi\onedrive\documentos\projects\aeon\backend\OrgManager.Api\bin\Debu
 C:\Users\bandi\onedrive\documentos\projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\bandi\onedrive\documentos\projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
 C:\Users\bandi\onedrive\documentos\projects\aeon\backend\OrgManager.Api\bin\Debug\net10.0\BCrypt.Net-Next.dll
-C:\Users\bandi\onedrive\documentos\projects\aeon\backend\orgmanager.api\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
-C:\Users\bandi\onedrive\documentos\projects\aeon\backend\orgmanager.api\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
-C:\Users\bandi\onedrive\documentos\projects\aeon\backend\orgmanager.api\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll
