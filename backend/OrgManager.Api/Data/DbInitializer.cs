@@ -7,17 +7,12 @@ namespace OrgManager.Api.Data
     {
         public static async Task InitializeAsync(AppDbContext context)
         {
-            // Make sure database is created
-            await context.Database.EnsureCreatedAsync();
+            // Run all pending migrations (creates tables fresh on a new DB)
+            await context.Database.MigrateAsync();
 
-            // Check if we already have users
-            if (await context.Users.AnyAsync())
-            {
-                return; // Database has been seeded
-            }
+            // Seed default users if none exist
+            if (await context.Users.AnyAsync()) return;
 
-            // Create a default admin user
-            // Password is: Admin@123
             var adminUser = new User
             {
                 Id = Guid.NewGuid(),
@@ -32,8 +27,6 @@ namespace OrgManager.Api.Data
                 UpdatedAt = DateTime.UtcNow
             };
 
-            // Create a test member user
-            // Password is: Member@123
             var memberUser = new User
             {
                 Id = Guid.NewGuid(),
@@ -51,8 +44,8 @@ namespace OrgManager.Api.Data
             context.Users.AddRange(adminUser, memberUser);
             await context.SaveChangesAsync();
 
-            Console.WriteLine("   Database seeded with test users!");
-            Console.WriteLine("   Admin: admin@aeon.com / Admin@123");
+            Console.WriteLine("✅  Database seeded!");
+            Console.WriteLine("   Admin:  admin@aeon.com  / Admin@123");
             Console.WriteLine("   Member: member@aeon.com / Member@123");
         }
     }

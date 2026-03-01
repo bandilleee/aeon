@@ -18,6 +18,7 @@ namespace OrgManager.Api.Data
         public DbSet<Member> Members { get; set; }
         public DbSet<UserSettings> UserSettings { get; set; }
         public DbSet<EventAttendee> EventAttendees { get; set; }
+        public DbSet<AccessRequest> AccessRequests { get; set; }
 
     }
 }

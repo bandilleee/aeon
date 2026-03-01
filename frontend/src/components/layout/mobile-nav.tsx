@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/auth-context";
 
 interface NavItem {
   title: string;
@@ -34,7 +35,7 @@ const userNavSections: NavSection[] = [
   {
     title: "Platform",
     items: [
-      { title: "Overview", href: "/dashboard", icon:  LayoutDashboard },
+      { title: "Overview", href: "/dashboard", icon: LayoutDashboard },
       { title: "Events", href: "/dashboard/events", icon: Calendar },
       { title: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
       { title: "Members", href: "/dashboard/members", icon: Users },
@@ -52,9 +53,9 @@ const adminNavSections: NavSection[] = [
   {
     title: "Admin",
     items: [
-      { title: "Admin Overview", href: "/admin", icon:  Shield },
-      { title: "Access Requests", href: "/admin/access-requests", icon: UserCheck, badge: 3 },
-      { title: "Event Approvals", href: "/admin/event-approvals", icon: FileCheck, badge: 2 },
+      { title: "Admin Overview", href: "/admin", icon: Shield },
+      { title: "Access Requests", href: "/admin/access-requests", icon: UserCheck },
+      { title: "Event Approvals", href: "/admin/event-approvals", icon: FileCheck },
       { title: "User Management", href: "/admin/users", icon: Users },
       { title: "Audit Logs", href: "/admin/audit-logs", icon: ScrollText },
       { title: "System Settings", href: "/admin/system", icon: Cog },
@@ -64,25 +65,34 @@ const adminNavSections: NavSection[] = [
 
 interface MobileNavProps {
   isOpen: boolean;
-  onClose:  () => void;
+  onClose: () => void;
   isAdmin?: boolean;
 }
 
 export function MobileNav({ isOpen, onClose, isAdmin = false }: MobileNavProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const navSections = isAdmin
-    ? [... userNavSections, ...adminNavSections]
+    ? [...userNavSections, ...adminNavSections]
     : userNavSections;
 
-  const user = {
-    name: "Jane Doe",
-    email: "jane@example.com",
-    plan: "Pro Plan",
-    initials: "JD",
-  };
+  // Build display values from real auth user
+  const displayName = user?.displayName || 
+    (user?.firstName ? `${user.firstName} ${user.lastName}` : null) || 
+    user?.email?.split("@")[0] || 
+    "User";
 
-  if (! isOpen) return null;
+  const initials = displayName
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
+
+  const roleLabel = user?.role === "admin" ? "Administrator" : "Member";
+
+  if (!isOpen) return null;
 
   return (
     <>
@@ -121,7 +131,7 @@ export function MobileNav({ isOpen, onClose, isAdmin = false }: MobileNavProps) 
               </div>
 
               <div className="space-y-1">
-                {section.items. map((item) => {
+                {section.items.map((item) => {
                   const isActive =
                     pathname === item.href ||
                     (item.href !== "/dashboard" &&
@@ -132,7 +142,7 @@ export function MobileNav({ isOpen, onClose, isAdmin = false }: MobileNavProps) 
                   return (
                     <Link
                       key={item.href}
-                      href={item. href}
+                      href={item.href}
                       onClick={onClose}
                       className={cn(
                         "flex items-center gap-3 px-3 py-2.5 text-sm rounded-md transition-all",
@@ -144,12 +154,12 @@ export function MobileNav({ isOpen, onClose, isAdmin = false }: MobileNavProps) 
                       <Icon
                         className={cn(
                           "h-4 w-4 flex-shrink-0",
-                          isActive ?  "text-white" : ""
+                          isActive ? "text-white" : ""
                         )}
                       />
                       <span className="flex-1">{item.title}</span>
                       {item.badge && (
-                        <span className="px-1. 5 py-0.5 text-[10px] font-medium bg-white/10 text-zinc-300 rounded">
+                        <span className="px-1.5 py-0.5 text-[10px] font-medium bg-white/10 text-zinc-300 rounded">
                           {item.badge}
                         </span>
                       )}
@@ -161,17 +171,17 @@ export function MobileNav({ isOpen, onClose, isAdmin = false }: MobileNavProps) 
           ))}
         </nav>
 
-        {/* User Section */}
+        {/* User Section — now uses real auth data */}
         <div className="p-4 border-t border-white/5">
           <div className="flex items-center gap-3 p-2">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-zinc-700 to-zinc-500 flex items-center justify-center text-xs text-white font-bold border border-white/10">
-              {user.initials}
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-zinc-700 to-zinc-500 flex items-center justify-center text-xs text-white font-bold border border-white/10 flex-shrink-0">
+              {initials}
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm text-zinc-200 font-medium">
-                {user.name}
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm text-zinc-200 font-medium truncate">
+                {displayName}
               </span>
-              <span className="text-xs text-zinc-500">{user.plan}</span>
+              <span className="text-xs text-zinc-500">{roleLabel}</span>
             </div>
           </div>
         </div>

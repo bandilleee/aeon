@@ -98,6 +98,47 @@ namespace OrgManager.Api.Controllers
             });
         }
 
+                // ==================== REQUEST ACCESS ====================
+        [HttpPost("request-access")]
+        public async Task<IActionResult> RequestAccess([FromBody] RequestAccessDto request)
+        {
+            // Check if a request from this email already exists
+            var existingRequest = await _context.AccessRequests
+                .FirstOrDefaultAsync(r => r.Email == request.Email && r.Status == "pending");
+            
+            if (existingRequest != null)
+            {
+                return BadRequest(new { message = "A request from this email is already pending review." });
+            }
+
+            // Also block if they're already a user
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            if (existingUser != null)
+            {
+                return BadRequest(new { message = "An account with this email already exists." });
+            }
+
+            var accessRequest = new AccessRequest
+            {
+                Id = Guid.NewGuid(),
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Email = request.Email,
+                Reason = request.Reason,
+                Status = "pending",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.AccessRequests.Add(accessRequest);
+            await _context.SaveChangesAsync();
+
+            return Ok(new ApiResponse<object> 
+            { 
+                Success = true, 
+                Data = new { message = "Your access request has been submitted. An admin will review it shortly." }
+            });
+        }
+
         // ==================== GET CURRENT USER ====================
         [HttpGet("me")]
         public async Task<IActionResult> GetCurrentUser()
@@ -173,4 +214,12 @@ namespace OrgManager.Api.Controllers
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
     }
+
+    public class RequestAccessDto
+{
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Reason { get; set; } = string.Empty;
+}
 }

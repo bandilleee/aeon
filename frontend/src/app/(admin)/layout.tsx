@@ -27,6 +27,8 @@ import {
   AlertCircle,
   CheckCircle2,
   LayoutDashboard,
+  UserCheck,
+  FileCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -55,14 +57,15 @@ const adminNavSections: NavSection[] = [
   {
     title: "Overview",
     items: [
-      { title: "Dashboard", href:  "/admin", icon: LayoutDashboard },
+      { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
     ],
   },
   {
     title: "Management",
     items: [
+      { title: "Access Requests", href: "/admin/access-requests", icon: UserCheck },
+      { title: "Event Approvals", href: "/admin/event-approvals", icon: FileCheck },
       { title: "Users", href: "/admin/users", icon: Users },
-      { title: "Event Approvals", href: "/admin/event-approvals", icon: Calendar, badge: 5 },
     ],
   },
   {

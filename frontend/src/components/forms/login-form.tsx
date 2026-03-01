@@ -37,19 +37,10 @@ export function LoginForm() {
         rememberMe: formData.rememberMe,
       });
 
-      // NEW: Check if the bouncer said no!
       if (!result.success) {
         setError(result.error || "Login failed");
-        setIsLoading(false);
-        return; // Stop running this function
       }
-
-      if (result.requiresTwoFactor) {
-        setRequires2FA(true);
-        setUserId(result.userId || '');
-      } else {
-        router.push('/dashboard');
-      }
+      // No router.push here — auth context handles the redirect
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
