@@ -20,6 +20,7 @@ namespace OrgManager.Api.Data
         public DbSet<EventAttendee> EventAttendees { get; set; }
         public DbSet<AccessRequest> AccessRequests { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<SystemSetting> SystemSettings { get; set; }
 
     }
 }

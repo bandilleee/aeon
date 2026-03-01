@@ -31,7 +31,7 @@ namespace OrgManager.Api.Controllers
             var totalEvents = await _context.Events.CountAsync();
             var pendingEvents = await _context.Events.CountAsync(e => e.Status == "pending_approval");
             var approvedEvents = await _context.Events.CountAsync(e => e.Status == "approved");
-            var upcomingEvents = await _context.Events.CountAsync(e => 
+            var upcomingEvents = await _context.Events.CountAsync(e =>
                 e.Status == "approved" && e.StartDate > DateTime.UtcNow);
 
             // Task stats
@@ -43,6 +43,10 @@ namespace OrgManager.Api.Controllers
             // Member stats
             var totalMembers = await _context.Members.CountAsync();
             var activeMembers = await _context.Members.CountAsync(m => m.Status == "active");
+
+            // Access request stats  ← NEW
+            var pendingAccessRequests = await _context.AccessRequests
+                .CountAsync(r => r.Status == "pending");
 
             // Recent users (last 5)
             var recentUsers = await _context.Users
@@ -72,7 +76,7 @@ namespace OrgManager.Api.Controllers
                 })
                 .ToListAsync();
 
-            // Pending approvals (events waiting for review)
+            // Pending event approvals (last 5)
             var pendingApprovals = await _context.Events
                 .Where(e => e.Status == "pending_approval")
                 .OrderByDescending(e => e.CreatedAt)
@@ -107,6 +111,9 @@ namespace OrgManager.Api.Controllers
                 members = new {
                     total = totalMembers,
                     active = activeMembers
+                },
+                accessRequests = new {         // ← NEW
+                    pending = pendingAccessRequests
                 },
                 recent = new {
                     users = recentUsers,

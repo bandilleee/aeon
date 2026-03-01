@@ -1,6 +1,6 @@
 "use client";
-
-import { useState } from "react";
+import { systemSettingsService } from '@/services/system-settings.service';
+import { useState, useEffect } from "react";
 import {
   Settings,
   Shield,
@@ -68,6 +68,22 @@ export default function SystemSettingsPage() {
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
 
+  // Load real settings from backend on mount
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const res = await systemSettingsService.getSettings();
+        if (res.success && res.data && Object.keys(res.data).length > 0) {
+          setSettings(res.data);
+        }
+        // If empty (first load), keep mockSystemSettings defaults — no action needed
+      } catch (err) {
+        console.error('Failed to load settings', err);
+      }
+    }
+    loadSettings();
+  }, []);
+
   const updateSettings = <K extends keyof SystemSettings>(
     section: K,
     updates: Partial<SystemSettings[K]>
@@ -81,11 +97,18 @@ export default function SystemSettingsPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSaving(false);
-    setHasChanges(false);
-    setShowSaveSuccess(true);
-    setTimeout(() => setShowSaveSuccess(false), 3000);
+    try {
+      const res = await systemSettingsService.saveSettings(settings);
+      if (res.success) {
+        setHasChanges(false);
+        setShowSaveSuccess(true);
+        setTimeout(() => setShowSaveSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error('Failed to save settings', err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleReset = () => {
@@ -103,7 +126,7 @@ export default function SystemSettingsPage() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="p-2. 5 bg-gradient-to-br from-violet-500/20 to-violet-500/5 rounded-xl border border-violet-500/20">
+              <div className="p-2.5 bg-gradient-to-br from-violet-500/20 to-violet-500/5 rounded-xl border border-violet-500/20">
                 <Settings className="h-5 w-5 text-violet-400" />
               </div>
               <div>
@@ -184,7 +207,7 @@ export default function SystemSettingsPage() {
                     ? "bg-red-500/10 border-red-500/20"
                     : activeTab === "notifications"
                     ? "bg-blue-500/10 border-blue-500/20"
-                    :  activeTab === "appearance"
+                    : activeTab === "appearance"
                     ? "bg-pink-500/10 border-pink-500/20"
                     : "bg-violet-500/10 border-violet-500/20"
                 )}
@@ -194,8 +217,8 @@ export default function SystemSettingsPage() {
                     "h-6 w-6",
                     activeTab === "security"
                       ? "text-red-400"
-                      :  activeTab === "notifications"
-                      ?  "text-blue-400"
+                      : activeTab === "notifications"
+                      ? "text-blue-400"
                       : activeTab === "appearance"
                       ? "text-pink-400"
                       : "text-violet-400"
@@ -215,7 +238,7 @@ export default function SystemSettingsPage() {
             {/* Tab Content */}
             <div className="space-y-8">
               {activeTab === "general" && (
-                <GeneralSettingsTab settings={settings. general} onUpdate={(updates) => updateSettings("general", updates)} />
+                <GeneralSettingsTab settings={settings.general} onUpdate={(updates) => updateSettings("general", updates)} />
               )}
               {activeTab === "security" && (
                 <SecuritySettingsTab settings={settings.security} onUpdate={(updates) => updateSettings("security", updates)} />
@@ -262,7 +285,7 @@ export default function SystemSettingsPage() {
    REUSABLE COMPONENTS
    ============================================ */
 
-function SettingsSection({ title, description, children }: { title: string; description?:  string; children: React.ReactNode }) {
+function SettingsSection({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
     <div className="space-y-4">
       <div>
@@ -274,7 +297,7 @@ function SettingsSection({ title, description, children }: { title: string; desc
   );
 }
 
-function SettingsRow({ label, description, children }: { label:  string; description?: string; children: React. ReactNode }) {
+function SettingsRow({ label, description, children }: { label: string; description?: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-4 p-4">
       <div className="flex-1">
@@ -286,22 +309,22 @@ function SettingsRow({ label, description, children }: { label:  string; descrip
   );
 }
 
-function Toggle({ checked, onChange, disabled }: { checked:  boolean; onChange: (checked: boolean) => void; disabled?: boolean }) {
+function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (checked: boolean) => void; disabled?: boolean }) {
   return (
     <button
       type="button"
-      onClick={() => ! disabled && onChange(!checked)}
+      onClick={() => !disabled && onChange(!checked)}
       disabled={disabled}
       className={cn(
         "w-11 h-6 rounded-full transition-colors relative",
-        checked ?  "bg-emerald-500" : "bg-zinc-700",
+        checked ? "bg-emerald-500" : "bg-zinc-700",
         disabled && "opacity-50 cursor-not-allowed"
       )}
     >
       <span
         className={cn(
           "absolute top-1 w-4 h-4 bg-white rounded-full transition-transform",
-          checked ?  "translate-x-6" : "translate-x-1"
+          checked ? "translate-x-6" : "translate-x-1"
         )}
       />
     </button>
@@ -314,10 +337,10 @@ function TextInput({
   placeholder,
   type = "text",
   className,
-}:  {
-  value:  string;
+}: {
+  value: string;
   onChange: (value: string) => void;
-  placeholder?:  string;
+  placeholder?: string;
   type?: string;
   className?: string;
 }) {
@@ -328,7 +351,7 @@ function TextInput({
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       className={cn(
-        "bg-zinc-800 border border-white/10 text-sm text-zinc-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-violet-500/30 transition-all placeholder: text-zinc-600",
+        "bg-zinc-800 border border-white/10 text-sm text-zinc-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-violet-500/30 transition-all placeholder:text-zinc-600",
         className
       )}
     />
@@ -340,10 +363,10 @@ function SelectInput({
   onChange,
   options,
   className,
-}:  {
-  value:  string;
+}: {
+  value: string;
   onChange: (value: string) => void;
-  options: { value: string; label:  string }[];
+  options: { value: string; label: string }[];
   className?: string;
 }) {
   return (
@@ -351,7 +374,7 @@ function SelectInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className={cn(
-        "bg-zinc-800 border border-white/10 text-sm text-zinc-300 rounded-lg px-3 py-2 focus: outline-none focus: ring-1 focus:ring-violet-500/30 appearance-none cursor-pointer",
+        "bg-zinc-800 border border-white/10 text-sm text-zinc-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-violet-500/30 appearance-none cursor-pointer",
         className
       )}
     >
@@ -370,10 +393,10 @@ function NumberInput({
   min,
   max,
   suffix,
-}:  {
-  value:  number;
+}: {
+  value: number;
   onChange: (value: number) => void;
-  min?:  number;
+  min?: number;
   max?: number;
   suffix?: string;
 }) {
@@ -382,10 +405,10 @@ function NumberInput({
       <input
         type="number"
         value={value}
-        onChange={(e) => onChange(parseInt(e.target. value) || 0)}
+        onChange={(e) => onChange(parseInt(e.target.value) || 0)}
         min={min}
         max={max}
-        className="w-20 bg-zinc-800 border border-white/10 text-sm text-zinc-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus: ring-violet-500/30 text-center"
+        className="w-20 bg-zinc-800 border border-white/10 text-sm text-zinc-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-violet-500/30 text-center"
       />
       {suffix && <span className="text-sm text-zinc-500">{suffix}</span>}
     </div>
@@ -401,7 +424,7 @@ function GeneralSettingsTab({
   onUpdate,
 }: {
   settings: SystemSettings["general"];
-  onUpdate: (updates:  Partial<SystemSettings["general"]>) => void;
+  onUpdate: (updates: Partial<SystemSettings["general"]>) => void;
 }) {
   return (
     <div className="space-y-8">
@@ -410,9 +433,9 @@ function GeneralSettingsTab({
           <TextInput value={settings.platformName} onChange={(v) => onUpdate({ platformName: v })} className="w-64" />
         </SettingsRow>
         <SettingsRow label="Platform Description" description="A short description of your community">
-          <TextInput value={settings. platformDescription} onChange={(v) => onUpdate({ platformDescription: v })} className="w-80" />
+          <TextInput value={settings.platformDescription} onChange={(v) => onUpdate({ platformDescription: v })} className="w-80" />
         </SettingsRow>
-        <SettingsRow label="Platform Logo" description="Upload your logo (recommended:  200x50px)">
+        <SettingsRow label="Platform Logo" description="Upload your logo (recommended: 200x50px)">
           <Button variant="secondary" size="sm">
             <Upload className="h-4 w-4 mr-2" />
             Upload Logo
@@ -422,7 +445,7 @@ function GeneralSettingsTab({
 
       <SettingsSection title="Regional Settings" description="Timezone, date format, and language preferences">
         <SettingsRow label="Timezone" description="Default timezone for all users">
-          <SelectInput value={settings.timezone} onChange={(v) => onUpdate({ timezone:  v })} options={timezones} className="w-64" />
+          <SelectInput value={settings.timezone} onChange={(v) => onUpdate({ timezone: v })} options={timezones} className="w-64" />
         </SettingsRow>
         <SettingsRow label="Date Format" description="How dates are displayed">
           <SelectInput value={settings.dateFormat} onChange={(v) => onUpdate({ dateFormat: v })} options={dateFormats} className="w-64" />
@@ -432,7 +455,7 @@ function GeneralSettingsTab({
             {(["12h", "24h"] as const).map((format) => (
               <button
                 key={format}
-                onClick={() => onUpdate({ timeFormat:  format })}
+                onClick={() => onUpdate({ timeFormat: format })}
                 className={cn(
                   "px-4 py-2 text-sm rounded-lg border transition-colors",
                   settings.timeFormat === format
@@ -440,7 +463,7 @@ function GeneralSettingsTab({
                     : "bg-zinc-800 text-zinc-400 border-white/10 hover:border-white/20"
                 )}
               >
-                {format === "12h" ?  "12-hour" : "24-hour"}
+                {format === "12h" ? "12-hour" : "24-hour"}
               </button>
             ))}
           </div>
@@ -461,7 +484,7 @@ function GeneralSettingsTab({
               value={settings.maintenanceMessage || ""}
               onChange={(e) => onUpdate({ maintenanceMessage: e.target.value })}
               rows={3}
-              className="w-full bg-zinc-800 border border-white/10 text-sm text-zinc-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus: ring-violet-500/30 resize-none"
+              className="w-full bg-zinc-800 border border-white/10 text-sm text-zinc-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-violet-500/30 resize-none"
               placeholder="Message shown to users during maintenance..."
             />
           </div>
@@ -476,14 +499,14 @@ function SecuritySettingsTab({
   onUpdate,
 }: {
   settings: SystemSettings["security"];
-  onUpdate: (updates:  Partial<SystemSettings["security"]>) => void;
+  onUpdate: (updates: Partial<SystemSettings["security"]>) => void;
 }) {
   const [showBlacklistModal, setShowBlacklistModal] = useState(false);
   const [newIp, setNewIp] = useState("");
 
   const addToBlacklist = () => {
     if (newIp && !settings.ipBlacklist.includes(newIp)) {
-      onUpdate({ ipBlacklist: [...settings. ipBlacklist, newIp] });
+      onUpdate({ ipBlacklist: [...settings.ipBlacklist, newIp] });
       setNewIp("");
       setShowBlacklistModal(false);
     }
@@ -497,7 +520,7 @@ function SecuritySettingsTab({
     <div className="space-y-8">
       <SettingsSection title="Password Policy" description="Requirements for user passwords">
         <SettingsRow label="Minimum Length">
-          <NumberInput value={settings.minPasswordLength} onChange={(v) => onUpdate({ minPasswordLength:  v })} min={6} max={32} suffix="characters" />
+          <NumberInput value={settings.minPasswordLength} onChange={(v) => onUpdate({ minPasswordLength: v })} min={6} max={32} suffix="characters" />
         </SettingsRow>
         <SettingsRow label="Require Uppercase" description="At least one uppercase letter">
           <Toggle checked={settings.requireUppercase} onChange={(v) => onUpdate({ requireUppercase: v })} />
@@ -508,11 +531,11 @@ function SecuritySettingsTab({
         <SettingsRow label="Require Numbers" description="At least one number">
           <Toggle checked={settings.requireNumbers} onChange={(v) => onUpdate({ requireNumbers: v })} />
         </SettingsRow>
-        <SettingsRow label="Require Special Characters" description="At least one special character (! @#$%^&*)">
+        <SettingsRow label="Require Special Characters" description="At least one special character (!@#$%^&*)">
           <Toggle checked={settings.requireSpecialChars} onChange={(v) => onUpdate({ requireSpecialChars: v })} />
         </SettingsRow>
         <SettingsRow label="Password Expiry" description="Force password change after this period (0 = never)">
-          <NumberInput value={settings.passwordExpiryDays} onChange={(v) => onUpdate({ passwordExpiryDays:  v })} min={0} max={365} suffix="days" />
+          <NumberInput value={settings.passwordExpiryDays} onChange={(v) => onUpdate({ passwordExpiryDays: v })} min={0} max={365} suffix="days" />
         </SettingsRow>
         <SettingsRow label="Prevent Password Reuse" description="Number of previous passwords that cannot be reused">
           <NumberInput value={settings.preventPasswordReuse} onChange={(v) => onUpdate({ preventPasswordReuse: v })} min={0} max={24} suffix="passwords" />
@@ -521,7 +544,7 @@ function SecuritySettingsTab({
 
       <SettingsSection title="Session Settings" description="Control user session behavior">
         <SettingsRow label="Session Timeout" description="Automatically log out inactive users">
-          <NumberInput value={settings.sessionTimeout} onChange={(v) => onUpdate({ sessionTimeout:  v })} min={5} max={480} suffix="minutes" />
+          <NumberInput value={settings.sessionTimeout} onChange={(v) => onUpdate({ sessionTimeout: v })} min={5} max={480} suffix="minutes" />
         </SettingsRow>
         <SettingsRow label="Max Concurrent Sessions" description="Maximum simultaneous logins per user">
           <NumberInput value={settings.maxConcurrentSessions} onChange={(v) => onUpdate({ maxConcurrentSessions: v })} min={1} max={10} suffix="sessions" />
@@ -530,7 +553,7 @@ function SecuritySettingsTab({
 
       <SettingsSection title="Two-Factor Authentication" description="Additional security layer for user accounts">
         <SettingsRow label="Require 2FA for All Users" description="Users must set up 2FA to access the platform">
-          <Toggle checked={settings.twoFactorRequired} onChange={(v) => onUpdate({ twoFactorRequired:  v })} />
+          <Toggle checked={settings.twoFactorRequired} onChange={(v) => onUpdate({ twoFactorRequired: v })} />
         </SettingsRow>
         {settings.twoFactorRequired && (
           <SettingsRow label="Grace Period" description="Days allowed to set up 2FA after first login">
@@ -561,9 +584,9 @@ function SecuritySettingsTab({
                 Add IP
               </Button>
             </div>
-            {settings.ipBlacklist.length > 0 ?  (
+            {settings.ipBlacklist.length > 0 ? (
               <div className="space-y-2">
-                {settings. ipBlacklist. map((ip) => (
+                {settings.ipBlacklist.map((ip) => (
                   <div key={ip} className="flex items-center justify-between p-2 bg-black/30 rounded-lg">
                     <code className="text-sm text-zinc-300 font-mono">{ip}</code>
                     <button onClick={() => removeFromBlacklist(ip)} className="p-1 text-zinc-500 hover:text-red-400 transition-colors">
@@ -604,7 +627,7 @@ function NotificationSettingsTab({
   onUpdate,
 }: {
   settings: SystemSettings["notifications"];
-  onUpdate: (updates:  Partial<SystemSettings["notifications"]>) => void;
+  onUpdate: (updates: Partial<SystemSettings["notifications"]>) => void;
 }) {
   const [showPassword, setShowPassword] = useState(false);
   const [testingEmail, setTestingEmail] = useState(false);
@@ -628,7 +651,7 @@ function NotificationSettingsTab({
                   "p-4 rounded-xl border text-center transition-all",
                   settings.emailProvider === provider
                     ? "bg-violet-500/10 border-violet-500/30 text-violet-300"
-                    :  "bg-zinc-800/50 border-white/5 text-zinc-400 hover:border-white/10"
+                    : "bg-zinc-800/50 border-white/5 text-zinc-400 hover:border-white/10"
                 )}
               >
                 <Mail className={cn("h-6 w-6 mx-auto mb-2", settings.emailProvider === provider ? "text-violet-400" : "text-zinc-500")} />
@@ -641,11 +664,11 @@ function NotificationSettingsTab({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm text-zinc-400 mb-2">SMTP Host</label>
-                <TextInput value={settings. smtpHost || ""} onChange={(v) => onUpdate({ smtpHost:  v })} placeholder="smtp.example.com" className="w-full" />
+                <TextInput value={settings.smtpHost || ""} onChange={(v) => onUpdate({ smtpHost: v })} placeholder="smtp.example.com" className="w-full" />
               </div>
               <div>
                 <label className="block text-sm text-zinc-400 mb-2">SMTP Port</label>
-                <TextInput value={settings. smtpPort?. toString() || ""} onChange={(v) => onUpdate({ smtpPort: parseInt(v) || 587 })} placeholder="587" className="w-full" />
+                <TextInput value={settings.smtpPort?.toString() || ""} onChange={(v) => onUpdate({ smtpPort: parseInt(v) || 587 })} placeholder="587" className="w-full" />
               </div>
               <div>
                 <label className="block text-sm text-zinc-400 mb-2">Username</label>
@@ -657,9 +680,9 @@ function NotificationSettingsTab({
                   <input
                     type={showPassword ? "text" : "password"}
                     value={settings.smtpPassword || ""}
-                    onChange={(e) => onUpdate({ smtpPassword:  e.target.value })}
+                    onChange={(e) => onUpdate({ smtpPassword: e.target.value })}
                     placeholder="••••••••"
-                    className="w-full bg-zinc-800 border border-white/10 text-sm text-zinc-300 rounded-lg px-3 py-2 pr-10 focus: outline-none focus: ring-1 focus:ring-violet-500/30"
+                    className="w-full bg-zinc-800 border border-white/10 text-sm text-zinc-300 rounded-lg px-3 py-2 pr-10 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
                   />
                   <button
                     type="button"
@@ -688,13 +711,13 @@ function NotificationSettingsTab({
 
       <SettingsSection title="Sender Information" description="Email sender details">
         <SettingsRow label="From Email">
-          <TextInput value={settings.fromEmail} onChange={(v) => onUpdate({ fromEmail: v })} placeholder="no-reply@example. com" className="w-64" />
+          <TextInput value={settings.fromEmail} onChange={(v) => onUpdate({ fromEmail: v })} placeholder="no-reply@example.com" className="w-64" />
         </SettingsRow>
         <SettingsRow label="From Name">
-          <TextInput value={settings.fromName} onChange={(v) => onUpdate({ fromName:  v })} placeholder="Aeon Community" className="w-64" />
+          <TextInput value={settings.fromName} onChange={(v) => onUpdate({ fromName: v })} placeholder="Aeon Community" className="w-64" />
         </SettingsRow>
         <SettingsRow label="Reply-To Email">
-          <TextInput value={settings. replyToEmail || ""} onChange={(v) => onUpdate({ replyToEmail:  v })} placeholder="support@example.com" className="w-64" />
+          <TextInput value={settings.replyToEmail || ""} onChange={(v) => onUpdate({ replyToEmail: v })} placeholder="support@example.com" className="w-64" />
         </SettingsRow>
         <div className="p-4">
           <Button variant="secondary" onClick={handleTestEmail} isLoading={testingEmail}>
@@ -715,16 +738,16 @@ function NotificationSettingsTab({
           <Toggle checked={settings.passwordResetEmailEnabled} onChange={(v) => onUpdate({ passwordResetEmailEnabled: v })} disabled={!settings.emailNotificationsEnabled} />
         </SettingsRow>
         <SettingsRow label="Event Reminders" description="Sent before events start">
-          <Toggle checked={settings.eventReminderEmailEnabled} onChange={(v) => onUpdate({ eventReminderEmailEnabled:  v })} disabled={!settings.emailNotificationsEnabled} />
+          <Toggle checked={settings.eventReminderEmailEnabled} onChange={(v) => onUpdate({ eventReminderEmailEnabled: v })} disabled={!settings.emailNotificationsEnabled} />
         </SettingsRow>
         <SettingsRow label="Event Approval Notifications" description="Sent when events are approved/rejected">
-          <Toggle checked={settings. eventApprovalEmailEnabled} onChange={(v) => onUpdate({ eventApprovalEmailEnabled: v })} disabled={!settings. emailNotificationsEnabled} />
+          <Toggle checked={settings.eventApprovalEmailEnabled} onChange={(v) => onUpdate({ eventApprovalEmailEnabled: v })} disabled={!settings.emailNotificationsEnabled} />
         </SettingsRow>
         <SettingsRow label="Task Assignments" description="Sent when tasks are assigned">
-          <Toggle checked={settings.taskAssignmentEmailEnabled} onChange={(v) => onUpdate({ taskAssignmentEmailEnabled:  v })} disabled={!settings.emailNotificationsEnabled} />
+          <Toggle checked={settings.taskAssignmentEmailEnabled} onChange={(v) => onUpdate({ taskAssignmentEmailEnabled: v })} disabled={!settings.emailNotificationsEnabled} />
         </SettingsRow>
         <SettingsRow label="Weekly Digest" description="Summary email sent weekly">
-          <Toggle checked={settings. weeklyDigestEnabled} onChange={(v) => onUpdate({ weeklyDigestEnabled:  v })} disabled={!settings.emailNotificationsEnabled} />
+          <Toggle checked={settings.weeklyDigestEnabled} onChange={(v) => onUpdate({ weeklyDigestEnabled: v })} disabled={!settings.emailNotificationsEnabled} />
         </SettingsRow>
       </SettingsSection>
     </div>
@@ -746,7 +769,7 @@ function AppearanceSettingsTab({
             <input
               type="color"
               value={settings.primaryColor}
-              onChange={(e) => onUpdate({ primaryColor: e. target.value })}
+              onChange={(e) => onUpdate({ primaryColor: e.target.value })}
               className="w-10 h-10 rounded-lg border border-white/10 cursor-pointer bg-transparent"
             />
             <code className="text-sm text-zinc-400 font-mono bg-zinc-800 px-2 py-1 rounded">{settings.primaryColor}</code>
@@ -757,7 +780,7 @@ function AppearanceSettingsTab({
             <input
               type="color"
               value={settings.secondaryColor}
-              onChange={(e) => onUpdate({ secondaryColor:  e.target.value })}
+              onChange={(e) => onUpdate({ secondaryColor: e.target.value })}
               className="w-10 h-10 rounded-lg border border-white/10 cursor-pointer bg-transparent"
             />
             <code className="text-sm text-zinc-400 font-mono bg-zinc-800 px-2 py-1 rounded">{settings.secondaryColor}</code>
@@ -768,7 +791,7 @@ function AppearanceSettingsTab({
             <input
               type="color"
               value={settings.accentColor}
-              onChange={(e) => onUpdate({ accentColor:  e.target.value })}
+              onChange={(e) => onUpdate({ accentColor: e.target.value })}
               className="w-10 h-10 rounded-lg border border-white/10 cursor-pointer bg-transparent"
             />
             <code className="text-sm text-zinc-400 font-mono bg-zinc-800 px-2 py-1 rounded">{settings.accentColor}</code>
@@ -778,10 +801,10 @@ function AppearanceSettingsTab({
 
       <SettingsSection title="Theme" description="Dark/light mode settings">
         <SettingsRow label="Default to Dark Mode" description="New users will see dark mode by default">
-          <Toggle checked={settings. darkModeDefault} onChange={(v) => onUpdate({ darkModeDefault: v })} />
+          <Toggle checked={settings.darkModeDefault} onChange={(v) => onUpdate({ darkModeDefault: v })} />
         </SettingsRow>
         <SettingsRow label="Allow Theme Toggle" description="Let users switch between light and dark mode">
-          <Toggle checked={settings.allowUserThemeToggle} onChange={(v) => onUpdate({ allowUserThemeToggle:  v })} />
+          <Toggle checked={settings.allowUserThemeToggle} onChange={(v) => onUpdate({ allowUserThemeToggle: v })} />
         </SettingsRow>
       </SettingsSection>
 
@@ -802,7 +825,7 @@ function AppearanceSettingsTab({
           <TextInput value={settings.footerText || ""} onChange={(v) => onUpdate({ footerText: v })} placeholder="© 2025 Your Company" className="w-80" />
         </SettingsRow>
         <SettingsRow label="Show 'Powered By'" description="Display Aeon branding in footer">
-          <Toggle checked={settings. showPoweredBy} onChange={(v) => onUpdate({ showPoweredBy:  v })} />
+          <Toggle checked={settings.showPoweredBy} onChange={(v) => onUpdate({ showPoweredBy: v })} />
         </SettingsRow>
       </SettingsSection>
     </div>
@@ -812,9 +835,9 @@ function AppearanceSettingsTab({
 function EventSettingsTab({
   settings,
   onUpdate,
-}:  {
-  settings:  SystemSettings["events"];
-  onUpdate:  (updates: Partial<SystemSettings["events"]>) => void;
+}: {
+  settings: SystemSettings["events"];
+  onUpdate: (updates: Partial<SystemSettings["events"]>) => void;
 }) {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: "", color: "#8B5CF6" });
@@ -823,8 +846,8 @@ function EventSettingsTab({
     if (newCategory.name) {
       onUpdate({
         eventCategories: [
-          ...settings. eventCategories,
-          { id: newCategory.name. toLowerCase().replace(/\s+/g, "_"), ...newCategory },
+          ...settings.eventCategories,
+          { id: newCategory.name.toLowerCase().replace(/\s+/g, "_"), ...newCategory },
         ],
       });
       setNewCategory({ name: "", color: "#8B5CF6" });
@@ -833,7 +856,7 @@ function EventSettingsTab({
   };
 
   const removeCategory = (id: string) => {
-    onUpdate({ eventCategories: settings.eventCategories. filter((c) => c.id !== id) });
+    onUpdate({ eventCategories: settings.eventCategories.filter((c) => c.id !== id) });
   };
 
   return (
@@ -844,14 +867,14 @@ function EventSettingsTab({
         </SettingsRow>
         {settings.requireApproval && (
           <SettingsRow label="Auto-Approve for Leaders" description="Community leaders can publish events without approval">
-            <Toggle checked={settings. autoApproveForLeaders} onChange={(v) => onUpdate({ autoApproveForLeaders: v })} />
+            <Toggle checked={settings.autoApproveForLeaders} onChange={(v) => onUpdate({ autoApproveForLeaders: v })} />
           </SettingsRow>
         )}
       </SettingsSection>
 
       <SettingsSection title="Registration Settings" description="Default settings for event registrations">
         <SettingsRow label="Default Max Attendees" description="Default limit for new events">
-          <NumberInput value={settings.maxAttendeesDefault} onChange={(v) => onUpdate({ maxAttendeesDefault:  v })} min={1} max={10000} suffix="attendees" />
+          <NumberInput value={settings.maxAttendeesDefault} onChange={(v) => onUpdate({ maxAttendeesDefault: v })} min={1} max={10000} suffix="attendees" />
         </SettingsRow>
         <SettingsRow label="Allow Waitlist" description="Enable waitlist when events are full">
           <Toggle checked={settings.allowWaitlist} onChange={(v) => onUpdate({ allowWaitlist: v })} />
@@ -870,7 +893,7 @@ function EventSettingsTab({
       <SettingsSection title="Event Categories" description="Manage categories for events">
         <div className="p-4">
           <div className="grid grid-cols-2 gap-3 mb-4">
-            {settings.eventCategories. map((cat) => (
+            {settings.eventCategories.map((cat) => (
               <div key={cat.id} className="flex items-center gap-3 p-3 bg-black/30 rounded-lg group">
                 <div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
                 <span className="text-sm text-zinc-300 flex-1">{cat.name}</span>
@@ -878,7 +901,7 @@ function EventSettingsTab({
                   onClick={() => removeCategory(cat.id)}
                   className="p-1 text-zinc-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
                 >
-                  <Trash2 className="h-3. 5 w-3.5" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </div>
             ))}
@@ -925,9 +948,9 @@ function EventSettingsTab({
 function MemberSettingsTab({
   settings,
   onUpdate,
-}:  {
-  settings:  SystemSettings["members"];
-  onUpdate:  (updates: Partial<SystemSettings["members"]>) => void;
+}: {
+  settings: SystemSettings["members"];
+  onUpdate: (updates: Partial<SystemSettings["members"]>) => void;
 }) {
   return (
     <div className="space-y-8">
@@ -938,10 +961,10 @@ function MemberSettingsTab({
         {settings.allowSelfRegistration && (
           <>
             <SettingsRow label="Require Email Verification" description="New members must verify their email">
-              <Toggle checked={settings. requireEmailVerification} onChange={(v) => onUpdate({ requireEmailVerification: v })} />
+              <Toggle checked={settings.requireEmailVerification} onChange={(v) => onUpdate({ requireEmailVerification: v })} />
             </SettingsRow>
             <SettingsRow label="Require Admin Approval" description="New registrations require admin approval">
-              <Toggle checked={settings.requireAdminApproval} onChange={(v) => onUpdate({ requireAdminApproval:  v })} />
+              <Toggle checked={settings.requireAdminApproval} onChange={(v) => onUpdate({ requireAdminApproval: v })} />
             </SettingsRow>
           </>
         )}
@@ -949,7 +972,7 @@ function MemberSettingsTab({
 
       <SettingsSection title="Profile Settings" description="Member profile configuration">
         <SettingsRow label="Allow Profile Editing" description="Members can edit their own profile">
-          <Toggle checked={settings. allowProfileEditing} onChange={(v) => onUpdate({ allowProfileEditing: v })} />
+          <Toggle checked={settings.allowProfileEditing} onChange={(v) => onUpdate({ allowProfileEditing: v })} />
         </SettingsRow>
       </SettingsSection>
 
@@ -972,34 +995,34 @@ function IntegrationSettingsTab({
   onUpdate,
 }: {
   settings: SystemSettings["integrations"];
-  onUpdate: (updates:  Partial<SystemSettings["integrations"]>) => void;
+  onUpdate: (updates: Partial<SystemSettings["integrations"]>) => void;
 }) {
   const integrations = [
     {
       id: "google-calendar",
-      name:  "Google Calendar",
+      name: "Google Calendar",
       description: "Sync events with Google Calendar",
       icon: Calendar,
       enabled: settings.googleCalendarEnabled,
-      onToggle: (v:  boolean) => onUpdate({ googleCalendarEnabled: v }),
+      onToggle: (v: boolean) => onUpdate({ googleCalendarEnabled: v }),
       color: "text-red-400",
       bgColor: "bg-red-500/10",
     },
     {
       id: "outlook",
       name: "Outlook Calendar",
-      description:  "Sync events with Outlook/Microsoft 365",
+      description: "Sync events with Outlook/Microsoft 365",
       icon: Calendar,
-      enabled: settings. outlookCalendarEnabled,
-      onToggle: (v:  boolean) => onUpdate({ outlookCalendarEnabled: v }),
+      enabled: settings.outlookCalendarEnabled,
+      onToggle: (v: boolean) => onUpdate({ outlookCalendarEnabled: v }),
       color: "text-blue-400",
-      bgColor:  "bg-blue-500/10",
+      bgColor: "bg-blue-500/10",
     },
     {
       id: "slack",
       name: "Slack",
       description: "Send notifications to Slack channels",
-      icon:  MessageSquare,
+      icon: MessageSquare,
       enabled: settings.slackEnabled,
       onToggle: (v: boolean) => onUpdate({ slackEnabled: v }),
       color: "text-purple-400",
@@ -1007,7 +1030,7 @@ function IntegrationSettingsTab({
     },
     {
       id: "teams",
-      name:  "Microsoft Teams",
+      name: "Microsoft Teams",
       description: "Send notifications to Teams channels",
       icon: MessageSquare,
       enabled: settings.teamsEnabled,
@@ -1017,10 +1040,10 @@ function IntegrationSettingsTab({
     },
     {
       id: "analytics",
-      name:  "Google Analytics",
+      name: "Google Analytics",
       description: "Track platform usage and metrics",
-      icon:  BarChart3,
-      enabled:  settings.googleAnalyticsEnabled,
+      icon: BarChart3,
+      enabled: settings.googleAnalyticsEnabled,
       onToggle: (v: boolean) => onUpdate({ googleAnalyticsEnabled: v }),
       color: "text-amber-400",
       bgColor: "bg-amber-500/10",
@@ -1029,7 +1052,7 @@ function IntegrationSettingsTab({
 
   const storageProviders = [
     { id: "local", name: "Local Storage", icon: HardDrive, description: "Store files on the server" },
-    { id: "s3", name: "Amazon S3", icon:  Cloud, description: "Store files in AWS S3" },
+    { id: "s3", name: "Amazon S3", icon: Cloud, description: "Store files in AWS S3" },
     { id: "azure", name: "Azure Blob", icon: Cloud, description: "Store files in Azure Blob Storage" },
     { id: "gcs", name: "Google Cloud", icon: Cloud, description: "Store files in Google Cloud Storage" },
   ];
@@ -1042,10 +1065,10 @@ function IntegrationSettingsTab({
             const Icon = integration.icon;
             return (
               <div
-                key={integration. id}
+                key={integration.id}
                 className={cn(
                   "flex items-center gap-4 p-4 rounded-xl border transition-all",
-                  integration.enabled ?  "bg-white/5 border-white/10" : "bg-zinc-900/30 border-white/5"
+                  integration.enabled ? "bg-white/5 border-white/10" : "bg-zinc-900/30 border-white/5"
                 )}
               >
                 <div className={cn("p-3 rounded-xl", integration.bgColor)}>
@@ -1072,9 +1095,9 @@ function IntegrationSettingsTab({
       <SettingsSection title="File Storage" description="Where uploaded files are stored">
         <div className="p-4">
           <div className="grid grid-cols-2 gap-3">
-            {storageProviders. map((provider) => {
+            {storageProviders.map((provider) => {
               const Icon = provider.icon;
-              const isSelected = settings.storageProvider === provider. id;
+              const isSelected = settings.storageProvider === provider.id;
               return (
                 <button
                   key={provider.id}
@@ -1083,7 +1106,7 @@ function IntegrationSettingsTab({
                     "flex items-center gap-3 p-4 rounded-xl border text-left transition-all",
                     isSelected
                       ? "bg-violet-500/10 border-violet-500/30"
-                      :  "bg-zinc-900/30 border-white/5 hover:border-white/10"
+                      : "bg-zinc-900/30 border-white/5 hover:border-white/10"
                   )}
                 >
                   <Icon className={cn("h-5 w-5", isSelected ? "text-violet-400" : "text-zinc-500")} />
@@ -1108,28 +1131,27 @@ function BackupSettingsTab({
   onUpdate,
 }: {
   settings: SystemSettings["backups"];
-  onUpdate: (updates:  Partial<SystemSettings["backups"]>) => void;
+  onUpdate: (updates: Partial<SystemSettings["backups"]>) => void;
 }) {
   const [isBackingUp, setIsBackingUp] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(false);
 
   const handleManualBackup = async () => {
     setIsBackingUp(true);
     await new Promise((resolve) => setTimeout(resolve, 3000));
     onUpdate({
       lastBackupAt: new Date().toISOString(),
-      lastBackupSize: "2. 5 GB",
+      lastBackupSize: "2.5 GB",
       lastBackupStatus: "success",
     });
     setIsBackingUp(false);
   };
 
-  const formatBackupTime = (timestamp?:  string) => {
+  const formatBackupTime = (timestamp?: string) => {
     if (!timestamp) return "Never";
     return new Date(timestamp).toLocaleString("en-ZA", {
       day: "numeric",
       month: "short",
-      year:  "numeric",
+      year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -1144,11 +1166,11 @@ function BackupSettingsTab({
             <div
               className={cn(
                 "p-4 rounded-2xl",
-                settings.lastBackupStatus === "success" ?  "bg-emerald-500/10" : "bg-red-500/10"
+                settings.lastBackupStatus === "success" ? "bg-emerald-500/10" : "bg-red-500/10"
               )}
             >
               <Database
-                className={cn("h-8 w-8", settings.lastBackupStatus === "success" ? "text-emerald-400" :  "text-red-400")}
+                className={cn("h-8 w-8", settings.lastBackupStatus === "success" ? "text-emerald-400" : "text-red-400")}
               />
             </div>
             <div>
@@ -1159,11 +1181,11 @@ function BackupSettingsTab({
                   <div
                     className={cn(
                       "w-2 h-2 rounded-full",
-                      settings. lastBackupStatus === "success" ? "bg-emerald-400" : "bg-red-400"
+                      settings.lastBackupStatus === "success" ? "bg-emerald-400" : "bg-red-400"
                     )}
                   />
                   <span
-                    className={cn("text-sm", settings.lastBackupStatus === "success" ? "text-emerald-400" :  "text-red-400")}
+                    className={cn("text-sm", settings.lastBackupStatus === "success" ? "text-emerald-400" : "text-red-400")}
                   >
                     {settings.lastBackupStatus === "success" ? "Successful" : "Failed"}
                   </span>
@@ -1191,7 +1213,7 @@ function BackupSettingsTab({
 
       <SettingsSection title="Automatic Backups" description="Schedule automatic backups">
         <SettingsRow label="Enable Auto Backup" description="Automatically backup your data">
-          <Toggle checked={settings.autoBackupEnabled} onChange={(v) => onUpdate({ autoBackupEnabled:  v })} />
+          <Toggle checked={settings.autoBackupEnabled} onChange={(v) => onUpdate({ autoBackupEnabled: v })} />
         </SettingsRow>
         {settings.autoBackupEnabled && (
           <>
@@ -1200,7 +1222,7 @@ function BackupSettingsTab({
                 {(["daily", "weekly", "monthly"] as const).map((freq) => (
                   <button
                     key={freq}
-                    onClick={() => onUpdate({ backupFrequency:  freq })}
+                    onClick={() => onUpdate({ backupFrequency: freq })}
                     className={cn(
                       "px-4 py-2 text-sm rounded-lg border transition-colors capitalize",
                       settings.backupFrequency === freq
@@ -1217,7 +1239,7 @@ function BackupSettingsTab({
               <input
                 type="time"
                 value={settings.backupTime}
-                onChange={(e) => onUpdate({ backupTime:  e.target.value })}
+                onChange={(e) => onUpdate({ backupTime: e.target.value })}
                 className="bg-zinc-800 border border-white/10 text-sm text-zinc-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
               />
             </SettingsRow>
@@ -1238,26 +1260,26 @@ function BackupSettingsTab({
         <div className="p-4">
           <div className="grid grid-cols-2 gap-3">
             {[
-              { id:  "local", name:  "Local Storage", icon: HardDrive },
-              { id:  "s3", name: "Amazon S3", icon: Cloud },
-              { id:  "azure", name:  "Azure Blob", icon: Cloud },
-              { id: "gcs", name:  "Google Cloud", icon: Cloud },
+              { id: "local", name: "Local Storage", icon: HardDrive },
+              { id: "s3", name: "Amazon S3", icon: Cloud },
+              { id: "azure", name: "Azure Blob", icon: Cloud },
+              { id: "gcs", name: "Google Cloud", icon: Cloud },
             ].map((provider) => {
               const Icon = provider.icon;
               const isSelected = settings.backupLocation === provider.id;
               return (
                 <button
-                  key={provider. id}
-                  onClick={() => onUpdate({ backupLocation:  provider.id as any })}
+                  key={provider.id}
+                  onClick={() => onUpdate({ backupLocation: provider.id as any })}
                   className={cn(
                     "flex items-center gap-3 p-4 rounded-xl border text-left transition-all",
                     isSelected
-                      ?  "bg-violet-500/10 border-violet-500/30"
+                      ? "bg-violet-500/10 border-violet-500/30"
                       : "bg-zinc-900/30 border-white/5 hover:border-white/10"
                   )}
                 >
                   <Icon className={cn("h-5 w-5", isSelected ? "text-violet-400" : "text-zinc-500")} />
-                  <span className={cn("text-sm font-medium", isSelected ? "text-violet-300" :  "text-zinc-300")}>
+                  <span className={cn("text-sm font-medium", isSelected ? "text-violet-300" : "text-zinc-300")}>
                     {provider.name}
                   </span>
                 </button>
@@ -1274,7 +1296,7 @@ function BackupSettingsTab({
             <div>
               <p className="text-sm text-amber-300 font-medium">Warning</p>
               <p className="text-xs text-amber-400/70 mt-1">
-                Restoring from a backup will replace all current data. This action cannot be undone. 
+                Restoring from a backup will replace all current data. This action cannot be undone.
               </p>
             </div>
           </div>
@@ -1283,7 +1305,7 @@ function BackupSettingsTab({
               <Upload className="h-4 w-4 mr-2" />
               Upload Backup File
             </Button>
-            <Button variant="secondary" className="text-amber-400 hover: bg-amber-500/10" disabled>
+            <Button variant="secondary" className="text-amber-400 hover:bg-amber-500/10" disabled>
               <RefreshCw className="h-4 w-4 mr-2" />
               Restore from Latest
             </Button>

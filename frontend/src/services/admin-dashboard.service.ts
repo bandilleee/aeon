@@ -23,6 +23,9 @@ export interface DashboardStats {
     total: number;
     active: number;
   };
+  accessRequests: {        // ← NEW
+    pending: number;
+  };
   recent: {
     users: Array<{
       id: string;
