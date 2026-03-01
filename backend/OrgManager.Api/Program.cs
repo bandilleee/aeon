@@ -23,6 +23,7 @@ builder.Services.AddCors(options =>
 
 // ==================== CONTROLLERS ====================
 builder.Services.AddControllers();
+builder.Services.AddScoped<OrgManager.Api.Services.AuditService>();
 
 // ==================== DATABASE ====================
 builder.Services.AddDbContext<AppDbContext>(options =>

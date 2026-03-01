@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrgManager.Api.Data;
 using OrgManager.Api.Models;
+using OrgManager.Api.Services;
 
 namespace OrgManager.Api.Controllers
 {
@@ -12,10 +13,12 @@ namespace OrgManager.Api.Controllers
     public class AccessRequestsController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly AuditService _auditService;
 
-        public AccessRequestsController(AppDbContext context)
+        public AccessRequestsController(AppDbContext context, AuditService auditService)
         {
             _context = context;
+            _auditService = auditService;
         }
 
         // GET: api/admin/access-requests
@@ -57,11 +60,9 @@ namespace OrgManager.Api.Controllers
             if (request.Status != "pending")
                 return BadRequest(new ApiResponse<object> { Success = false, Error = new { message = "Request has already been reviewed" } });
 
-            // Check if user already exists
             if (await _context.Users.AnyAsync(u => u.Email == request.Email))
                 return BadRequest(new ApiResponse<object> { Success = false, Error = new { message = "A user with this email already exists" } });
 
-            // Create the new user account
             var newUser = new User
             {
                 Id = Guid.NewGuid(),
@@ -79,7 +80,6 @@ namespace OrgManager.Api.Controllers
 
             _context.Users.Add(newUser);
 
-            // Update the request
             request.Status = "approved";
             request.ReviewedBy = dto.ReviewedBy;
             request.ReviewNote = dto.Note;
@@ -87,8 +87,24 @@ namespace OrgManager.Api.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(new ApiResponse<object>
-            {
+            await _auditService.LogAsync(
+                actionCode: "ACCESS_REQUEST_APPROVED",
+                action: "Access Request Approved",
+                category: "user_management",
+                description: $"Access request approved for {request.Email}. Account created with role '{dto.Role ?? "member"}'.",
+                actorId: dto.ReviewedBy ?? "admin",
+                actorName: dto.ReviewedBy ?? "Admin",
+                actorEmail: "",
+                actorRole: "admin",
+                severity: "info",
+                result: "success",
+                targetType: "user",
+                targetId: newUser.Id.ToString(),
+                targetName: $"{request.FirstName} {request.LastName}",
+                ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"
+            );
+
+            return Ok(new ApiResponse<object> {
                 Success = true,
                 Data = new { message = $"Request approved. Account created for {request.Email}." }
             });
@@ -112,8 +128,24 @@ namespace OrgManager.Api.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(new ApiResponse<object>
-            {
+            await _auditService.LogAsync(
+                actionCode: "ACCESS_REQUEST_REJECTED",
+                action: "Access Request Rejected",
+                category: "user_management",
+                description: $"Access request rejected for {request.Email}. Reason: {dto.Reason}",
+                actorId: dto.ReviewedBy ?? "admin",
+                actorName: dto.ReviewedBy ?? "Admin",
+                actorEmail: "",
+                actorRole: "admin",
+                severity: "warning",
+                result: "success",
+                targetType: "user",
+                targetId: request.Email,
+                targetName: $"{request.FirstName} {request.LastName}",
+                ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"
+            );
+
+            return Ok(new ApiResponse<object> {
                 Success = true,
                 Data = new { message = "Request rejected." }
             });

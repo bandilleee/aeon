@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using OrgManager.Api.Data;
 using OrgManager.Api.Models;
+using OrgManager.Api.Services;
 
 namespace OrgManager.Api.Controllers
 {
@@ -15,11 +16,13 @@ namespace OrgManager.Api.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly AuditService _auditService;
 
-        public AuthController(AppDbContext context, IConfiguration configuration)
+        public AuthController(AppDbContext context, IConfiguration configuration, AuditService auditService)
         {
             _context = context;
             _configuration = configuration;
+            _auditService = auditService;
         }
 
         // ==================== LOGIN ====================
@@ -27,16 +30,30 @@ namespace OrgManager.Api.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-            
+
             if (user == null)
             {
                 return Unauthorized(new { message = "Invalid email or password." });
             }
 
             bool isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
-            
+
             if (!isPasswordValid)
             {
+                // Log failed login attempt
+                await _auditService.LogAsync(
+                    actionCode: "AUTH_LOGIN_FAILED",
+                    action: "Login Failed",
+                    category: "authentication",
+                    description: $"Failed login attempt for {request.Email}",
+                    actorId: user.Id.ToString(),
+                    actorName: user.DisplayName,
+                    actorEmail: user.Email,
+                    actorRole: user.Role,
+                    severity: "warning",
+                    result: "failure",
+                    ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"
+                );
                 return Unauthorized(new { message = "Invalid email or password." });
             }
 
@@ -44,12 +61,27 @@ namespace OrgManager.Api.Controllers
             user.LastLoginAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
+            // Log successful login
+            await _auditService.LogAsync(
+                actionCode: "AUTH_LOGIN",
+                action: "Login Successful",
+                category: "authentication",
+                description: $"{user.Email} logged in successfully",
+                actorId: user.Id.ToString(),
+                actorName: user.DisplayName,
+                actorEmail: user.Email,
+                actorRole: user.Role,
+                severity: "info",
+                result: "success",
+                ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                userAgent: Request.Headers.UserAgent.ToString()
+            );
+
             // Generate JWT Token
             var token = GenerateJwtToken(user);
 
-            // Return in the format the frontend expects
-            return Ok(new { 
-                Token = token,  // Capital T to match frontend
+            return Ok(new {
+                Token = token,
                 User = new {
                     Id = user.Id,
                     Email = user.Email,
@@ -63,60 +95,18 @@ namespace OrgManager.Api.Controllers
             });
         }
 
-        // ==================== REGISTER ====================
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
-        {
-            // Check if email already exists
-            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-            if (existingUser != null)
-            {
-                return BadRequest(new { message = "An account with this email already exists." });
-            }
-
-            // Create new user
-            var newUser = new User
-            {
-                Id = Guid.NewGuid(),
-                Email = request.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                DisplayName = $"{request.FirstName} {request.LastName}",
-                Role = "member",       // Default role
-                Status = "pending",    // Needs admin approval
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            _context.Users.Add(newUser);
-            await _context.SaveChangesAsync();
-
-            return Ok(new ApiResponse<object> { 
-                Success = true, 
-                Data = new { message = "Registration successful! Your account is pending approval." }
-            });
-        }
-
-                // ==================== REQUEST ACCESS ====================
+        // ==================== REQUEST ACCESS ====================
         [HttpPost("request-access")]
         public async Task<IActionResult> RequestAccess([FromBody] RequestAccessDto request)
         {
-            // Check if a request from this email already exists
+            var existing = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            if (existing != null)
+                return BadRequest(new ApiResponse<object> { Success = false, Error = new { message = "An account with this email already exists." } });
+
             var existingRequest = await _context.AccessRequests
                 .FirstOrDefaultAsync(r => r.Email == request.Email && r.Status == "pending");
-            
             if (existingRequest != null)
-            {
-                return BadRequest(new { message = "A request from this email is already pending review." });
-            }
-
-            // Also block if they're already a user
-            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-            if (existingUser != null)
-            {
-                return BadRequest(new { message = "An account with this email already exists." });
-            }
+                return BadRequest(new ApiResponse<object> { Success = false, Error = new { message = "A pending request for this email already exists." } });
 
             var accessRequest = new AccessRequest
             {
@@ -132,10 +122,40 @@ namespace OrgManager.Api.Controllers
             _context.AccessRequests.Add(accessRequest);
             await _context.SaveChangesAsync();
 
-            return Ok(new ApiResponse<object> 
-            { 
-                Success = true, 
-                Data = new { message = "Your access request has been submitted. An admin will review it shortly." }
+            return Ok(new ApiResponse<object> {
+                Success = true,
+                Data = new { message = "Your request has been submitted. An admin will review it shortly." }
+            });
+        }
+
+        // ==================== REGISTER ====================
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            if (existingUser != null)
+                return BadRequest(new { message = "An account with this email already exists." });
+
+            var newUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Email = request.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                DisplayName = $"{request.FirstName} {request.LastName}",
+                Role = "member",
+                Status = "pending",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.Users.Add(newUser);
+            await _context.SaveChangesAsync();
+
+            return Ok(new ApiResponse<object> {
+                Success = true,
+                Data = new { message = "Registration successful! Your account is pending approval." }
             });
         }
 
@@ -143,21 +163,16 @@ namespace OrgManager.Api.Controllers
         [HttpGet("me")]
         public async Task<IActionResult> GetCurrentUser()
         {
-            // Get user ID from JWT claims
             var userIdClaim = User.FindFirst("id")?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-            {
                 return Unauthorized(new { message = "Invalid token" });
-            }
 
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
-            {
                 return NotFound(new { message = "User not found" });
-            }
 
-            return Ok(new ApiResponse<object> { 
-                Success = true, 
+            return Ok(new ApiResponse<object> {
+                Success = true,
                 Data = new {
                     Id = user.Id,
                     Email = user.Email,
@@ -186,11 +201,11 @@ namespace OrgManager.Api.Controllers
                     new Claim("role", user.Role),
                     new Claim("displayName", user.DisplayName)
                 }),
-                Expires = DateTime.UtcNow.AddDays(7), // Token valid for 7 days
+                Expires = DateTime.UtcNow.AddDays(7),
                 Issuer = _configuration["JwtSettings:Issuer"],
                 Audience = _configuration["JwtSettings:Audience"],
                 SigningCredentials = new SigningCredentials(
-                    new SymmetricSecurityKey(key), 
+                    new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature
                 )
             };
@@ -200,7 +215,7 @@ namespace OrgManager.Api.Controllers
         }
     }
 
-    // ==================== REQUEST DTOs ====================
+    // ==================== DTOs ====================
     public class LoginRequest
     {
         public string Email { get; set; } = string.Empty;
@@ -216,10 +231,10 @@ namespace OrgManager.Api.Controllers
     }
 
     public class RequestAccessDto
-{
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string Reason { get; set; } = string.Empty;
-}
+    {
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Reason { get; set; } = string.Empty;
+    }
 }
