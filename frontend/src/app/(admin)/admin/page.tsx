@@ -55,12 +55,14 @@ export default function AdminOverviewPage() {
   };
 
   // Build stats cards from real data
+  type ChangeType = "positive" | "neutral" | "negative";
+
   const statsCards = stats ? [
     {
       title: "Total Users",
       value: stats.users.total,
       change: `${stats.users.active} active`,
-      changeType: "positive" as const,
+      changeType: "positive" as ChangeType,
       icon: Users,
       iconColor: "bg-blue-500/10 text-blue-300"
     },
@@ -68,7 +70,7 @@ export default function AdminOverviewPage() {
       title: "Pending Users",
       value: stats.users.pending,
       change: stats.users.pending > 0 ? "Needs attention" : "All clear",
-      changeType: stats.users.pending > 0 ? "neutral" as const : "positive" as const,
+      changeType: stats.users.pending > 0 ? "neutral" as ChangeType : "positive" as ChangeType,
       icon: UserPlus,
       iconColor: "bg-violet-500/10 text-violet-400"
     },
@@ -76,7 +78,7 @@ export default function AdminOverviewPage() {
       title: "Event Approvals",
       value: stats.events.pending,
       change: `${stats.events.total} total events`,
-      changeType: "neutral" as const,
+      changeType: "neutral" as ChangeType,
       icon: ListChecks,
       iconColor: "bg-amber-500/10 text-amber-400"
     },
@@ -84,7 +86,7 @@ export default function AdminOverviewPage() {
       title: "Tasks",
       value: stats.tasks.total,
       change: `${stats.tasks.completed} completed`,
-      changeType: "neutral" as const,
+      changeType: "neutral" as ChangeType,
       icon: FileText,
       iconColor: "bg-zinc-500/10 text-zinc-300"
     },
