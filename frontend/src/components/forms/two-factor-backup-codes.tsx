@@ -279,7 +279,7 @@ IMPORTANT:
           label="I have saved my backup codes"
           description="I understand that I won't be able to see these codes again."
           checked={confirmSaved}
-          onChange={(e) => setConfirmSaved(e.target.checked)}
+          onCheckedChange={(checked) => setConfirmSaved(checked)}
         />
       </div>
 

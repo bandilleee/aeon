@@ -14,6 +14,7 @@ import { getTaskStatusBadge, getTaskPriorityBadge } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { Task, TaskStatus } from "@/types/task.types";
 import { taskService, TaskComment } from "@/services/tasks.service";
+import { useAuth } from "@/contexts/auth-context"; // Real user!
 
 interface TaskDetailsProps {
   taskId: string;
@@ -68,10 +69,11 @@ function formatDueDate(dateString?: string) {
 
 export function TaskDetails({ taskId }: TaskDetailsProps) {
   const router = useRouter();
+  const { user } = useAuth(); // Get the REAL logged-in user!
   
   // Real Data States
   const [task, setTask] = useState<Task | null>(null);
-  const [comments, setComments] = useState<TaskComment[]>([]); // <-- New state for real comments!
+  const [comments, setComments] = useState<TaskComment[]>([]);
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -113,15 +115,18 @@ export function TaskDetails({ taskId }: TaskDetailsProps) {
     loadData();
   }, [taskId]);
 
-  // Fake current user (We will replace this when we do Auth Context later)
+  // Build currentUser from REAL auth context
   const currentUser = {
-    id: "user_1",
-    displayName: "Bandile (Admin)",
-    initials: "BA",
-    isAdmin: true,
+    id: user?.id || "",
+    displayName: user?.displayName || user?.firstName || "User",
+    initials: user?.displayName
+      ? user.displayName.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()
+      : "U",
+    isAdmin: user?.role === "admin",
   };
 
-  const isCreator = true; 
+  // Check if current user is the creator (compare with task.createdBy if available)
+  const isCreator = task?.createdBy === currentUser.id || currentUser.isAdmin;
   const isAdmin = currentUser.isAdmin;
   const canEdit = isCreator || isAdmin;
   const canDelete = isCreator || isAdmin;

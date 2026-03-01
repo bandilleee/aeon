@@ -122,6 +122,9 @@ export function DashboardOverview() {
     // SAFETY CHECK: Wait for the user context to be fully loaded before fetching
     if (!user || !user.id) return;
 
+    // Store user ID for TypeScript type narrowing
+    const userId = user.id;
+
     async function fetchDashboardData() {
       setIsLoading(true);
       try {
@@ -129,7 +132,7 @@ export function DashboardOverview() {
           taskService.getAllTasks(),
           eventService.getAllEvents(),
           memberService.getAllMembers(),
-          settingsService.getSettings(user.id) // Safely uses the real user ID
+          settingsService.getSettings(userId) // Safely uses the real user ID
         ]);
 
         if (tasksRes.success) setTasks(tasksRes.data || []);
@@ -139,8 +142,10 @@ export function DashboardOverview() {
         // Dynamic name from settings, falling back to Auth context name
         if (settingsRes.success && settingsRes.data?.displayName) {
           setUserName(settingsRes.data.displayName.split(" ")[0]);
-        } else if (user?.name) {
-          setUserName(user.name.split(" ")[0]);
+        } else if (user?.displayName) {
+          setUserName(user.displayName.split(" ")[0]);
+        } else if (user?.firstName) {
+          setUserName(user.firstName);
         }
 
       } catch (error) {

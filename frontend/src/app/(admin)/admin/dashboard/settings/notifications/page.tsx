@@ -26,22 +26,22 @@ export default function SettingsNotifications() {
         <Checkbox
           label={<span className="flex items-center gap-2"><Bell className="h-4 w-4" /> All email notifications</span>}
           checked={notifications.emailNotifications}
-          onChange={e => setNotifications(f => ({ ...f, emailNotifications: e.target.checked }))}
+          onCheckedChange={(checked) => setNotifications(f => ({ ...f, emailNotifications: checked }))}
         />
         <Checkbox
           label={<span className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Event notifications</span>}
           checked={notifications.eventNotifications}
-          onChange={e => setNotifications(f => ({ ...f, eventNotifications: e.target.checked }))}
+          onCheckedChange={(checked) => setNotifications(f => ({ ...f, eventNotifications: checked }))}
         />
         <Checkbox
           label={<span className="flex items-center gap-2"><ListChecks className="h-4 w-4" /> Task notifications</span>}
           checked={notifications.taskNotifications}
-          onChange={e => setNotifications(f => ({ ...f, taskNotifications: e.target.checked }))}
+          onCheckedChange={(checked) => setNotifications(f => ({ ...f, taskNotifications: checked }))}
         />
         <Checkbox
           label={<span className="flex items-center gap-2"><Users className="h-4 w-4" /> Member activity</span>}
           checked={notifications.memberNotifications}
-          onChange={e => setNotifications(f => ({ ...f, memberNotifications: e.target.checked }))}
+          onCheckedChange={(checked) => setNotifications(f => ({ ...f, memberNotifications: checked }))}
         />
         <div className="flex justify-end pt-6">
           <Button onClick={handleSave}>Save Preferences</Button>

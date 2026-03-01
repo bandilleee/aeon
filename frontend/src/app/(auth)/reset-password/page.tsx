@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
-import { ResetPasswordForm } from "@/components/forms/reset-password-form";
+import ResetPasswordForm from "@/components/forms/reset-password-form";
 
 export const metadata: Metadata = {
   title: "Reset Password - Aeon",

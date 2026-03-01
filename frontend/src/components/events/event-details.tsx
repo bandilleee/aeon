@@ -13,7 +13,8 @@ import { ConfirmationModal } from "@/components/ui/modal";
 import { mockAttendees, getEventStatusBadge, getEventCategoryBadge } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { Event, EventAttendee } from "@/types/event.types";
-import { eventService } from "@/services/events.service"; // <-- Our bridge!
+import { eventService } from "@/services/events.service";
+import { useAuth } from "@/contexts/auth-context"; // Real user!
 
 interface EventDetailsProps {
   eventId: string;
@@ -56,6 +57,7 @@ function getDuration(startDate: string, endDate: string): string {
 
 export function EventDetails({ eventId }: EventDetailsProps) {
   const router = useRouter();
+  const { user } = useAuth(); // Get the REAL logged-in user!
   
   // --- REAL DATA STATES ---
   const [event, setEvent] = useState<Event | null>(null);
@@ -93,9 +95,18 @@ export function EventDetails({ eventId }: EventDetailsProps) {
     fetchEvent();
   }, [eventId]);
 
-  const currentUser = { id: "user_1", displayName: "Bandile (Admin)", email: "jane@example.com", initials: "BA" };
+  // Build currentUser from real auth context
+  const currentUser = {
+    id: user?.id || "",
+    displayName: user?.displayName || user?.firstName || "User",
+    email: user?.email || "",
+    initials: user?.displayName
+      ? user.displayName.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()
+      : "U",
+  };
 
-  const isCreator = true; // Fallback since backend doesn't store this yet
+  // Check if current user is the creator (compare with event.createdBy)
+  const isCreator = event?.createdBy === currentUser.id || user?.role === "admin";
   const isRegistered = localIsRegistered || attendees.some((a) => a.userId === currentUser.id);
 
   // --- LOADING STATE ---

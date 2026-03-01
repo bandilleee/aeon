@@ -1,6 +1,6 @@
 "use client";
 import { taskService } from "@/services/tasks.service"; 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,7 +28,8 @@ import {
 } from "@/components/ui";
 import { ConfirmationModal, Modal } from "@/components/ui/modal";
 import { createTaskSchema, CreateTaskFormData } from "@/lib/validations";
-import { mockUsers, mockEvents } from "@/lib/mock-data";
+import { usersService } from "@/services/users.service";
+import { eventService } from "@/services/events.service";
 
 /**
  * Status options
@@ -50,38 +51,91 @@ const priorityOptions = [
   { value: "urgent", label: "Urgent", description: "Critical priority" },
 ];
 
-/**
- * Convert users to multi-select options
- */
-const collaboratorOptions = mockUsers.map((user) => ({
-  value: user.id,
-  label: user.displayName,
-  description: user.email,
-  icon: (
-    <div className="w-6 h-6 rounded-full bg-linear-to-tr from-zinc-700 to-zinc-500 flex items-center justify-center text-[8px] text-white font-bold border border-white/10">
-      {user.initials}
-    </div>
-  ),
-}));
+// User and Event types for the fetched data
+interface FetchedUser {
+  id: string;
+  displayName: string;
+  email: string;
+  initials?: string;
+}
 
-/**
- * Convert events to select options
- */
-const eventOptions = [
-  { value: "", label: "No linked event" },
-  ...mockEvents
-    .filter((event) => event.status === "approved")
-    .map((event) => ({
-      value: event.id,
-      label: event.title,
-    })),
-];
+interface FetchedEvent {
+  id: string;
+  title: string;
+  status: string;
+}
 
 export function CreateTaskForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Fetch real users and events from API
+  const [users, setUsers] = useState<FetchedUser[]>([]);
+  const [events, setEvents] = useState<FetchedEvent[]>([]);
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true);
+
+  // Fetch users and events on component mount
+  useEffect(() => {
+    async function fetchOptions() {
+      try {
+        setIsLoadingOptions(true);
+        
+        // Fetch users for collaborators
+        const usersResponse = await usersService.getAllUsers();
+        if (usersResponse.success && usersResponse.data) {
+          setUsers(usersResponse.data.map((u: any) => ({
+            id: u.id || u.Id,
+            displayName: u.displayName || u.DisplayName || `${u.firstName} ${u.lastName}`.trim() || u.email,
+            email: u.email || u.Email || "",
+            initials: u.initials || u.Initials || (u.displayName?.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()) || "U",
+          })));
+        }
+
+        // Fetch events
+        const eventsResponse = await eventService.getAllEvents();
+        if (eventsResponse.success && eventsResponse.data) {
+          setEvents(eventsResponse.data.map((e: any) => ({
+            id: e.id || e.Id,
+            title: e.title || e.Title,
+            status: e.status || e.Status,
+          })));
+        }
+      } catch (error) {
+        console.error("Failed to fetch options:", error);
+      } finally {
+        setIsLoadingOptions(false);
+      }
+    }
+
+    fetchOptions();
+  }, []);
+
+  // Convert users to multi-select options (dynamically)
+  const collaboratorOptions = useMemo(() => 
+    users.map((user) => ({
+      value: user.id,
+      label: user.displayName,
+      description: user.email,
+      icon: (
+        <div className="w-6 h-6 rounded-full bg-linear-to-tr from-zinc-700 to-zinc-500 flex items-center justify-center text-[8px] text-white font-bold border border-white/10">
+          {user.initials}
+        </div>
+      ),
+    })),
+  [users]);
+
+  // Convert events to select options (dynamically)
+  const eventOptions = useMemo(() => [
+    { value: "", label: "No linked event" },
+    ...events
+      .filter((event) => event.status === "approved")
+      .map((event) => ({
+        value: event.id,
+        label: event.title,
+      })),
+  ], [events]);
 
   const {
     register,
@@ -357,7 +411,7 @@ export function CreateTaskForm() {
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {selectedCollaborators.map((userId) => {
-                        const user = mockUsers.find((u) => u.id === userId);
+                        const user = users.find((u) => u.id === userId);
                         if (!user) return null;
                         return (
                           <div

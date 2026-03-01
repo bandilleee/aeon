@@ -44,7 +44,7 @@ export function Header({ onMobileMenuToggle, isMobileMenuOpen, isAdmin }: Header
   const [showNotifications, setShowNotifications] = useState(false);
 
   // Dynamic user data processing
-  const displayName = user?.displayName || user?.name || user?.email?.split('@')[0] || "User";
+  const displayName = user?.displayName || user?.firstName || user?.email?.split('@')[0] || "User";
   const email = user?.email || "";
   const initials = displayName.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase();
   const isUserAdmin = isAdmin || user?.role?.toLowerCase() === "admin";

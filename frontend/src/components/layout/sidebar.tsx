@@ -44,7 +44,7 @@ export function Sidebar() {
   const { user } = useAuth();
 
   // Dynamic user data
-  const displayName = user?.displayName || user?.name || user?.email?.split('@')[0] || "User";
+  const displayName = user?.displayName || user?.firstName || user?.email?.split('@')[0] || "User";
   const initials = displayName.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase();
   const avatarUrl = user?.avatarUrl;
   const plan = "Pro Plan"; // Placeholder

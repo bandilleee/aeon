@@ -21,6 +21,12 @@ interface LoginCredentials {
   rememberMe?: boolean;
 }
 
+interface ResetPasswordParams {
+  token: string;
+  email: string;
+  newPassword: string;
+}
+
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -33,6 +39,7 @@ interface AuthContextType {
   }>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
+  resetPassword: (params: ResetPasswordParams) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -151,6 +158,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!refreshToken) return;
   };
 
+  const resetPassword = async (params: ResetPasswordParams) => {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5073";
+    
+    const response = await fetch(`${baseUrl}/api/auth/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        token: params.token,
+        email: params.email,
+        newPassword: params.newPassword,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to reset password");
+    }
+  };
+
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
@@ -158,6 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     refreshSession,
+    resetPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

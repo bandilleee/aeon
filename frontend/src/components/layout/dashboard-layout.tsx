@@ -16,8 +16,8 @@ export function DashboardLayout({ children, isAdmin = false }: DashboardLayoutPr
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-400 font-sans antialiased">
       <div className="flex">
-        {/* Sidebar (Desktop) */}
-        <Sidebar isAdmin={isAdmin} />
+        {/* Sidebar (Desktop) - Uses auth context internally for user role */}
+        <Sidebar />
 
         {/* Mobile Navigation */}
         <MobileNav
