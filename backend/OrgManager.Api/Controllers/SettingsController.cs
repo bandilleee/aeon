@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrgManager.Api.Data;
 using OrgManager.Api.Models;
+using OrgManager.Api.Services;
 
 namespace OrgManager.Api.Controllers
 {
@@ -11,96 +12,208 @@ namespace OrgManager.Api.Controllers
     [Route("api/[controller]")]
     public class SettingsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly AppDbContext  _context;
+        private readonly EmailService  _emailService;
 
-        public SettingsController(AppDbContext context)
+        public SettingsController(AppDbContext context, EmailService emailService)
         {
-            _context = context;
+            _context      = context;
+            _emailService = emailService;
         }
 
-        // GET: api/settings/{userId}
+        // ── GET: api/settings/{userId} ─────────────────────────────────────
         [HttpGet("{userId}")]
-        public async Task<ActionResult<ApiResponse<UserSettings>>> GetSettings(string userId)
+        public async Task<IActionResult> GetSettings(string userId)
         {
-            var settings = await _context.UserSettings.FirstOrDefaultAsync(s => s.UserId == userId);
-            
-            // Auto-Generate profile if this is their first time!
+            var settings = await _context.UserSettings
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+
             if (settings == null)
             {
-                settings = new UserSettings { 
-                    Id = Guid.NewGuid(), 
-                    UserId = userId,
-                    DisplayName = "Jane Doe",
-                    Email = "jane@example.com",
-                    Phone = "+27 82 123 4567"
-                };
-                _context.UserSettings.Add(settings);
-                await _context.SaveChangesAsync();
+                // Return defaults if no settings row yet
+                return Ok(new {
+                    success = true,
+                    data    = new {
+                        id                   = (string?)null,
+                        userId,
+                        displayName          = "",
+                        email                = "",
+                        phone                = "",
+                        bio                  = "",
+                        avatarUrl            = "",
+                        emailNotifications   = true,
+                        eventNotifications   = true,
+                        taskNotifications    = false,
+                        memberNotifications  = true,
+                        twoFactorEnabled     = false
+                    }
+                });
             }
 
-            return Ok(new ApiResponse<UserSettings> { Success = true, Data = settings });
+            return Ok(new { success = true, data = settings });
         }
 
-        // PUT: api/settings/profile/{userId}
+        // ── PUT: api/settings/profile/{userId} ─────────────────────────────
         [HttpPut("profile/{userId}")]
-        public async Task<ActionResult<ApiResponse<UserSettings>>> UpdateProfile(string userId, UserSettings updated)
+        public async Task<IActionResult> UpdateProfile(
+            string userId, [FromBody] UpdateProfileDto dto)
         {
-            var settings = await _context.UserSettings.FirstOrDefaultAsync(s => s.UserId == userId);
-            if (settings == null) return NotFound(new ApiResponse<object> { Success = false, Error = new { message = "Settings not found" } });
+            var settings = await _context.UserSettings
+                .FirstOrDefaultAsync(s => s.UserId == userId);
 
-            settings.DisplayName = updated.DisplayName;
-            settings.Email = updated.Email;
-            settings.Phone = updated.Phone;
-            settings.Bio = updated.Bio;
-            settings.AvatarUrl = updated.AvatarUrl;
+            if (settings == null)
+            {
+                settings = new UserSettings
+                {
+                    Id     = Guid.NewGuid(),
+                    UserId = userId
+                };
+                _context.UserSettings.Add(settings);
+            }
+
+            if (dto.DisplayName != null) settings.DisplayName = dto.DisplayName;
+            if (dto.Email       != null) settings.Email       = dto.Email;
+            if (dto.Phone       != null) settings.Phone       = dto.Phone;
+            if (dto.Bio         != null) settings.Bio         = dto.Bio;
+            if (dto.AvatarUrl   != null) settings.AvatarUrl   = dto.AvatarUrl;
+
+            // Also sync displayName back to the User table
+            if (Guid.TryParse(userId, out var userGuid))
+            {
+                var user = await _context.Users.FindAsync(userGuid);
+                if (user != null)
+                {
+                    if (dto.DisplayName != null) user.DisplayName = dto.DisplayName;
+                    if (dto.Phone       != null) user.Phone       = dto.Phone;
+                    user.UpdatedAt = DateTime.UtcNow;
+                }
+            }
 
             await _context.SaveChangesAsync();
-            return Ok(new ApiResponse<UserSettings> { Success = true, Data = settings });
+            return Ok(new { success = true, data = settings });
         }
 
-        // PUT: api/settings/notifications/{userId}
+        // ── PUT: api/settings/notifications/{userId} ───────────────────────
         [HttpPut("notifications/{userId}")]
-        public async Task<ActionResult<ApiResponse<UserSettings>>> UpdateNotifications(string userId, UserSettings updated)
+        public async Task<IActionResult> UpdateNotifications(
+            string userId, [FromBody] UpdateNotificationsDto dto)
         {
-            var settings = await _context.UserSettings.FirstOrDefaultAsync(s => s.UserId == userId);
-            if (settings == null) return NotFound(new ApiResponse<object> { Success = false, Error = new { message = "Settings not found" } });
+            var settings = await _context.UserSettings
+                .FirstOrDefaultAsync(s => s.UserId == userId);
 
-            settings.EmailNotifications = updated.EmailNotifications;
-            settings.EventNotifications = updated.EventNotifications;
-            settings.TaskNotifications = updated.TaskNotifications;
-            settings.MemberNotifications = updated.MemberNotifications;
+            if (settings == null)
+            {
+                settings = new UserSettings
+                {
+                    Id     = Guid.NewGuid(),
+                    UserId = userId
+                };
+                _context.UserSettings.Add(settings);
+            }
+
+            settings.EmailNotifications  = dto.EmailNotifications;
+            settings.EventNotifications  = dto.EventNotifications;
+            settings.TaskNotifications   = dto.TaskNotifications;
+            settings.MemberNotifications = dto.MemberNotifications;
 
             await _context.SaveChangesAsync();
-            return Ok(new ApiResponse<UserSettings> { Success = true, Data = settings });
+            return Ok(new { success = true, data = settings });
         }
 
-        // PUT: api/settings/2fa/{userId}
+        // ── PUT: api/settings/2fa/{userId} ─────────────────────────────────
         [HttpPut("2fa/{userId}")]
-        public async Task<ActionResult<ApiResponse<UserSettings>>> Toggle2FA(string userId, [FromBody] bool isEnabled)
+        public async Task<IActionResult> Toggle2FA(string userId, [FromBody] Toggle2faDto dto)
         {
-            var settings = await _context.UserSettings.FirstOrDefaultAsync(s => s.UserId == userId);
-            if (settings == null) return NotFound();
+            var settings = await _context.UserSettings
+                .FirstOrDefaultAsync(s => s.UserId == userId);
 
-            settings.TwoFactorEnabled = isEnabled;
+            if (settings == null)
+            {
+                settings = new UserSettings
+                {
+                    Id     = Guid.NewGuid(),
+                    UserId = userId
+                };
+                _context.UserSettings.Add(settings);
+            }
+
+            settings.TwoFactorEnabled = dto.Enabled;
+
+            // Also sync to User table
+            if (Guid.TryParse(userId, out var userGuid))
+            {
+                var user = await _context.Users.FindAsync(userGuid);
+                if (user != null)
+                {
+                    user.TwoFactorStatus = dto.Enabled ? "enabled" : "disabled";
+                    user.UpdatedAt       = DateTime.UtcNow;
+                }
+            }
+
             await _context.SaveChangesAsync();
-            return Ok(new ApiResponse<UserSettings> { Success = true, Data = settings });
+            return Ok(new { success = true, data = settings });
         }
 
-        // POST: api/settings/password/{userId}
+        // ── POST: api/settings/password/{userId} ───────────────────────────
         [HttpPost("password/{userId}")]
-        public async Task<ActionResult<ApiResponse<string>>> ChangePassword(string userId, [FromBody] ChangePasswordDto request)
+        public async Task<IActionResult> ChangePassword(
+            string userId, [FromBody] ChangePasswordDto dto)
         {
-            // Note: In production, you would use ASP.NET Core Identity to verify and hash passwords here.
-            // For now, we simulate a successful change so your frontend UI works flawlessly!
-            await Task.Delay(500); 
-            return Ok(new ApiResponse<string> { Success = true, Data = "Password updated successfully" });
+            if (!Guid.TryParse(userId, out var userGuid))
+                return BadRequest(new { message = "Invalid user ID." });
+
+            var user = await _context.Users.FindAsync(userGuid);
+            if (user == null)
+                return NotFound(new { message = "User not found." });
+
+            // Verify current password
+            bool currentValid = BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash);
+            if (!currentValid)
+                return BadRequest(new { message = "Current password is incorrect." });
+
+            if (dto.NewPassword.Length < 8)
+                return BadRequest(new { message = "New password must be at least 8 characters." });
+
+            user.PasswordHash        = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            user.MustChangePassword  = false;
+            user.PasswordLastChanged = DateTime.UtcNow;
+            user.UpdatedAt           = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            // ── Send password-changed confirmation email ──────────────────
+            _ = _emailService.SendPasswordChangedAsync(user.Email, user.DisplayName);
+
+            return Ok(new { success = true, data = "Password changed successfully." });
         }
     }
 
-    // Helper class for the password payload
+    // ── DTOs ───────────────────────────────────────────────────────────────
+    public class UpdateProfileDto
+    {
+        public string? DisplayName { get; set; }
+        public string? Email       { get; set; }
+        public string? Phone       { get; set; }
+        public string? Bio         { get; set; }
+        public string? AvatarUrl   { get; set; }
+    }
+
+    public class UpdateNotificationsDto
+    {
+        public bool EmailNotifications  { get; set; } = true;
+        public bool EventNotifications  { get; set; } = true;
+        public bool TaskNotifications   { get; set; } = false;
+        public bool MemberNotifications { get; set; } = true;
+    }
+
+    public class Toggle2faDto
+    {
+        public bool Enabled { get; set; }
+    }
+
     public class ChangePasswordDto
     {
         public string CurrentPassword { get; set; } = string.Empty;
-        public string NewPassword { get; set; } = string.Empty;
+        public string NewPassword     { get; set; } = string.Empty;
     }
 }

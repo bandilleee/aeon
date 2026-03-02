@@ -1,158 +1,214 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrgManager.Api.Data;
 using OrgManager.Api.Models;
+using OrgManager.Api.Services;
 using System.Text.Json;
-using Microsoft.AspNetCore.Authorization;
 
 namespace OrgManager.Api.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("api/admin/events")] 
+    [Route("api/admin/events")]
     public class AdminEventsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly AppDbContext  _context;
+        private readonly EmailService  _emailService;
 
-        public AdminEventsController(AppDbContext context)
+        public AdminEventsController(AppDbContext context, EmailService emailService)
         {
-            _context = context;
+            _context      = context;
+            _emailService = emailService;
         }
 
-        // --- 1. EVENTS ---
-
+        // ── GET ALL EVENTS ─────────────────────────────────────────────────
         [HttpGet]
         public async Task<ActionResult<ApiResponse<IEnumerable<object>>>> GetEvents()
         {
-            var dbEvents = await _context.Events.ToListAsync();
-            
+            var dbEvents = await _context.Events
+                .OrderByDescending(e => e.CreatedAt)
+                .ToListAsync();
+
             var events = dbEvents.Select(e => new {
-                id = e.Id.ToString(),
-                title = e.Title,
-                description = e.Description,
-                category = e.Category,
-                startDate = e.StartDate,
-                endDate = e.EndDate,
-                status = e.Status,
-                isVirtual = e.IsVirtual,
-                location = e.Location,
-                virtualLink = e.VirtualLink,
-                visibility = e.Visibility,
+                id                   = e.Id.ToString(),
+                title                = e.Title,
+                description          = e.Description,
+                category             = e.Category,
+                startDate            = e.StartDate,
+                endDate              = e.EndDate,
+                status               = e.Status,
+                isVirtual            = e.IsVirtual,
+                location             = e.Location,
+                virtualLink          = e.VirtualLink,
+                visibility           = e.Visibility,
                 requiresRegistration = e.RequiresRegistration,
-                maxAttendees = e.MaxAttendees,
-                currentAttendees = e.CurrentAttendees,
-                createdByUser = JsonSerializer.Deserialize<object>(e.CreatedByUserJson),
-                createdAt = e.CreatedAt,
-                updatedAt = e.UpdatedAt,
-                approvedBy = e.ApprovedBy,
-                approvedAt = e.ApprovedAt,
-                rejectionReason = e.RejectionReason
+                maxAttendees         = e.MaxAttendees,
+                currentAttendees     = e.CurrentAttendees,
+                createdBy            = e.CreatedBy,
+                createdByUser        = JsonSerializer.Deserialize<object>(e.CreatedByUserJson ?? "{}"),
+                createdAt            = e.CreatedAt,
+                updatedAt            = e.UpdatedAt,
+                approvedBy           = e.ApprovedBy,
+                approvedAt           = e.ApprovedAt,
+                rejectionReason      = e.RejectionReason
             });
 
             return Ok(new ApiResponse<IEnumerable<object>> { Success = true, Data = events });
         }
 
+        // ── UPDATE EVENT STATUS (approve / reject / etc.) ──────────────────
         [HttpPut("{id}/status")]
-        public async Task<ActionResult<ApiResponse<bool>>> UpdateEventStatus(Guid id, [FromBody] UpdateEventStatusDto dto)
+        public async Task<ActionResult<ApiResponse<bool>>> UpdateEventStatus(
+            Guid id, [FromBody] UpdateEventStatusDto dto)
         {
             var evt = await _context.Events.FindAsync(id);
-            if (evt == null) return NotFound();
+            if (evt == null)
+                return NotFound(new ApiResponse<object> { Success = false, Error = new { message = "Event not found." } });
 
-            evt.Status = dto.Status;
+            var previousStatus = evt.Status;
+            evt.Status    = dto.Status;
             evt.UpdatedAt = DateTime.UtcNow;
 
             if (dto.Status == "approved")
             {
-                evt.ApprovedBy = "Admin"; // In real app, grab from JWT token
-                evt.ApprovedAt = DateTime.UtcNow;
+                var actorName = User.FindFirst("displayName")?.Value ?? "Admin";
+                evt.ApprovedBy      = actorName;
+                evt.ApprovedAt      = DateTime.UtcNow;
+                evt.RejectionReason = null;
             }
             else if (dto.Status == "rejected")
             {
                 evt.RejectionReason = dto.Reason;
+                evt.ApprovedBy      = null;
+                evt.ApprovedAt      = null;
             }
 
             await _context.SaveChangesAsync();
+
+            // ── EMAIL NOTIFICATIONS ──────────────────────────────────────
+            if (!string.IsNullOrEmpty(evt.CreatedBy) &&
+                Guid.TryParse(evt.CreatedBy, out var creatorGuid))
+            {
+                var creator = await _context.Users.FindAsync(creatorGuid);
+                if (creator != null)
+                {
+                    if (dto.Status == "approved")
+                    {
+                        _ = _emailService.SendEventApprovedAsync(
+                            creator.Email,
+                            creator.DisplayName,
+                            evt.Title
+                        );
+                    }
+                    else if (dto.Status == "rejected")
+                    {
+                        _ = _emailService.SendEventRejectedAsync(
+                            creator.Email,
+                            creator.DisplayName,
+                            evt.Title,
+                            dto.Reason ?? "No reason provided."
+                        );
+                    }
+                }
+            }
+
             return Ok(new ApiResponse<bool> { Success = true, Data = true });
         }
 
-        // --- 2. ATTENDEES ---
-
+        // ── GET ATTENDEES FOR AN EVENT ─────────────────────────────────────
         [HttpGet("{eventId}/attendees")]
         public async Task<ActionResult<ApiResponse<IEnumerable<object>>>> GetAttendees(Guid eventId)
         {
             var dbAttendees = await _context.EventAttendees
-                                            .Where(a => a.EventId == eventId)
-                                            .ToListAsync();
+                .Where(a => a.EventId == eventId)
+                .OrderBy(a => a.RegisteredAt)
+                .ToListAsync();
 
             var attendees = dbAttendees.Select(a => new {
-                id = a.Id.ToString(),
-                eventId = a.EventId.ToString(),
-                userId = a.UserId,
-                user = JsonSerializer.Deserialize<object>(a.UserJson),
-                status = a.Status,
+                id           = a.Id.ToString(),
+                eventId      = a.EventId.ToString(),
+                userId       = a.UserId,
+                user         = JsonSerializer.Deserialize<object>(a.UserJson ?? "{}"),
+                status       = a.Status,
                 registeredAt = a.RegisteredAt,
-                checkedInBy = a.CheckedInBy,
-                checkedInAt = a.CheckedInAt
+                checkedInBy  = a.CheckedInBy,
+                checkedInAt  = a.CheckedInAt
             });
 
             return Ok(new ApiResponse<IEnumerable<object>> { Success = true, Data = attendees });
         }
 
+        // ── ADD ATTENDEE (admin manually adds someone) ─────────────────────
         [HttpPost("{eventId}/attendees")]
-        public async Task<ActionResult<ApiResponse<object>>> AddAttendee(Guid eventId, [FromBody] CreateAttendeeDto dto)
+        public async Task<ActionResult<ApiResponse<object>>> AddAttendee(
+            Guid eventId, [FromBody] CreateAttendeeDto dto)
         {
             var newAttendee = new EventAttendee
             {
-                Id = Guid.NewGuid(),
-                EventId = eventId,
-                UserId = dto.UserId,
-                UserJson = JsonSerializer.Serialize(dto.User),
-                Status = dto.Status,
+                Id           = Guid.NewGuid(),
+                EventId      = eventId,
+                UserId       = dto.UserId,
+                UserJson     = JsonSerializer.Serialize(dto.User),
+                Status       = dto.Status,
                 RegisteredAt = DateTime.UtcNow
             };
 
             _context.EventAttendees.Add(newAttendee);
 
-            // Update event count
+            // Increment the event's attendee count
             var evt = await _context.Events.FindAsync(eventId);
             if (evt != null)
             {
-                evt.CurrentAttendees += 1;
+                evt.CurrentAttendees++;
+                evt.UpdatedAt = DateTime.UtcNow;
             }
 
             await _context.SaveChangesAsync();
-            return Ok(new ApiResponse<object> { Success = true, Data = new { id = newAttendee.Id } });
+
+            return Ok(new ApiResponse<object> {
+                Success = true,
+                Data    = new { id = newAttendee.Id.ToString() }
+            });
         }
 
+        // ── UPDATE ATTENDEE STATUS (check-in, no-show, etc.) ──────────────
         [HttpPut("attendees/{attendeeId}/status")]
-        public async Task<ActionResult<ApiResponse<bool>>> UpdateAttendeeStatus(Guid attendeeId, [FromBody] UpdateAttendeeStatusDto dto)
+        public async Task<ActionResult<ApiResponse<bool>>> UpdateAttendeeStatus(
+            Guid attendeeId, [FromBody] UpdateAttendeeStatusDto dto)
         {
             var attendee = await _context.EventAttendees.FindAsync(attendeeId);
-            if (attendee == null) return NotFound();
+            if (attendee == null)
+                return NotFound(new ApiResponse<object> { Success = false, Error = new { message = "Attendee not found." } });
 
             attendee.Status = dto.Status;
+
             if (dto.Status == "checked_in")
             {
                 attendee.CheckedInAt = DateTime.UtcNow;
-                attendee.CheckedInBy = "Admin";
+                attendee.CheckedInBy = User.FindFirst("displayName")?.Value ?? "Admin";
             }
 
             await _context.SaveChangesAsync();
             return Ok(new ApiResponse<bool> { Success = true, Data = true });
         }
 
+        // ── REMOVE ATTENDEE ────────────────────────────────────────────────
         [HttpDelete("attendees/{attendeeId}")]
         public async Task<ActionResult<ApiResponse<bool>>> RemoveAttendee(Guid attendeeId)
         {
             var attendee = await _context.EventAttendees.FindAsync(attendeeId);
-            if (attendee == null) return NotFound();
+            if (attendee == null)
+                return NotFound(new ApiResponse<object> { Success = false, Error = new { message = "Attendee not found." } });
 
             _context.EventAttendees.Remove(attendee);
 
+            // Decrement the count
             var evt = await _context.Events.FindAsync(attendee.EventId);
             if (evt != null && evt.CurrentAttendees > 0)
             {
-                evt.CurrentAttendees -= 1;
+                evt.CurrentAttendees--;
+                evt.UpdatedAt = DateTime.UtcNow;
             }
 
             await _context.SaveChangesAsync();
@@ -160,16 +216,17 @@ namespace OrgManager.Api.Controllers
         }
     }
 
+    // ── DTOs ───────────────────────────────────────────────────────────────
     public class UpdateEventStatusDto
     {
-        public string Status { get; set; } = string.Empty;
+        public string  Status { get; set; } = string.Empty;
         public string? Reason { get; set; }
     }
 
     public class CreateAttendeeDto
     {
         public string UserId { get; set; } = string.Empty;
-        public object User { get; set; } = new();
+        public object User   { get; set; } = new();
         public string Status { get; set; } = "registered";
     }
 
