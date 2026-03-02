@@ -13,8 +13,8 @@ namespace OrgManager.Api.Controllers
     [Route("api/admin/events")]
     public class AdminEventsController : ControllerBase
     {
-        private readonly AppDbContext  _context;
-        private readonly EmailService  _emailService;
+        private readonly AppDbContext _context;
+        private readonly EmailService _emailService;
 
         public AdminEventsController(AppDbContext context, EmailService emailService)
         {
@@ -64,15 +64,23 @@ namespace OrgManager.Api.Controllers
         {
             var evt = await _context.Events.FindAsync(id);
             if (evt == null)
-                return NotFound(new ApiResponse<object> { Success = false, Error = new { message = "Event not found." } });
+                return NotFound(new ApiResponse<object>
+                {
+                    Success = false,
+                    Error   = new { message = "Event not found." }
+                });
 
-            var previousStatus = evt.Status;
+            // Capture actor from JWT claims
+            var actorName  = User.FindFirst("displayName")?.Value
+                          ?? User.FindFirst("name")?.Value
+                          ?? "Admin";
+            var actorEmail = User.FindFirst("email")?.Value ?? "";
+
             evt.Status    = dto.Status;
             evt.UpdatedAt = DateTime.UtcNow;
 
             if (dto.Status == "approved")
             {
-                var actorName = User.FindFirst("displayName")?.Value ?? "Admin";
                 evt.ApprovedBy      = actorName;
                 evt.ApprovedAt      = DateTime.UtcNow;
                 evt.RejectionReason = null;
@@ -87,6 +95,7 @@ namespace OrgManager.Api.Controllers
             await _context.SaveChangesAsync();
 
             // ── EMAIL NOTIFICATIONS ──────────────────────────────────────
+            // Look up the event creator in the Users table and notify them
             if (!string.IsNullOrEmpty(evt.CreatedBy) &&
                 Guid.TryParse(evt.CreatedBy, out var creatorGuid))
             {
@@ -95,6 +104,7 @@ namespace OrgManager.Api.Controllers
                 {
                     if (dto.Status == "approved")
                     {
+                        // Fire-and-forget — don't block the response for email
                         _ = _emailService.SendEventApprovedAsync(
                             creator.Email,
                             creator.DisplayName,
@@ -107,7 +117,7 @@ namespace OrgManager.Api.Controllers
                             creator.Email,
                             creator.DisplayName,
                             evt.Title,
-                            dto.Reason ?? "No reason provided."
+                            dto.Reason ?? "No reason was provided."
                         );
                     }
                 }
@@ -156,7 +166,7 @@ namespace OrgManager.Api.Controllers
 
             _context.EventAttendees.Add(newAttendee);
 
-            // Increment the event's attendee count
+            // Increment the event's current attendee count
             var evt = await _context.Events.FindAsync(eventId);
             if (evt != null)
             {
@@ -166,27 +176,34 @@ namespace OrgManager.Api.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(new ApiResponse<object> {
+            return Ok(new ApiResponse<object>
+            {
                 Success = true,
                 Data    = new { id = newAttendee.Id.ToString() }
             });
         }
 
-        // ── UPDATE ATTENDEE STATUS (check-in, no-show, etc.) ──────────────
+        // ── UPDATE ATTENDEE STATUS (check-in, no-show, cancelled, etc.) ────
         [HttpPut("attendees/{attendeeId}/status")]
         public async Task<ActionResult<ApiResponse<bool>>> UpdateAttendeeStatus(
             Guid attendeeId, [FromBody] UpdateAttendeeStatusDto dto)
         {
             var attendee = await _context.EventAttendees.FindAsync(attendeeId);
             if (attendee == null)
-                return NotFound(new ApiResponse<object> { Success = false, Error = new { message = "Attendee not found." } });
+                return NotFound(new ApiResponse<object>
+                {
+                    Success = false,
+                    Error   = new { message = "Attendee not found." }
+                });
 
             attendee.Status = dto.Status;
 
             if (dto.Status == "checked_in")
             {
                 attendee.CheckedInAt = DateTime.UtcNow;
-                attendee.CheckedInBy = User.FindFirst("displayName")?.Value ?? "Admin";
+                attendee.CheckedInBy = User.FindFirst("displayName")?.Value
+                                    ?? User.FindFirst("name")?.Value
+                                    ?? "Admin";
             }
 
             await _context.SaveChangesAsync();
@@ -199,11 +216,15 @@ namespace OrgManager.Api.Controllers
         {
             var attendee = await _context.EventAttendees.FindAsync(attendeeId);
             if (attendee == null)
-                return NotFound(new ApiResponse<object> { Success = false, Error = new { message = "Attendee not found." } });
+                return NotFound(new ApiResponse<object>
+                {
+                    Success = false,
+                    Error   = new { message = "Attendee not found." }
+                });
 
             _context.EventAttendees.Remove(attendee);
 
-            // Decrement the count
+            // Decrement the event's current attendee count
             var evt = await _context.Events.FindAsync(attendee.EventId);
             if (evt != null && evt.CurrentAttendees > 0)
             {
@@ -216,13 +237,16 @@ namespace OrgManager.Api.Controllers
         }
     }
 
-    // ── DTOs ───────────────────────────────────────────────────────────────
+    // ── DTOs ───────────────────────────────────────────────────────────────────
+
+    /// <summary>Used by PUT /api/admin/events/{id}/status</summary>
     public class UpdateEventStatusDto
     {
         public string  Status { get; set; } = string.Empty;
         public string? Reason { get; set; }
     }
 
+    /// <summary>Used by POST /api/admin/events/{eventId}/attendees</summary>
     public class CreateAttendeeDto
     {
         public string UserId { get; set; } = string.Empty;
@@ -230,6 +254,7 @@ namespace OrgManager.Api.Controllers
         public string Status { get; set; } = "registered";
     }
 
+    /// <summary>Used by PUT /api/admin/events/attendees/{attendeeId}/status</summary>
     public class UpdateAttendeeStatusDto
     {
         public string Status { get; set; } = string.Empty;

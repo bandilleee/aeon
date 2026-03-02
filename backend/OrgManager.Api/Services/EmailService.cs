@@ -7,7 +7,7 @@ namespace OrgManager.Api.Services
 {
     public class EmailService
     {
-        private readonly IConfiguration        _config;
+        private readonly IConfiguration _config;
         private readonly ILogger<EmailService> _logger;
 
         private const string FROM_EMAIL = "aeonsnotifications@gmail.com";
