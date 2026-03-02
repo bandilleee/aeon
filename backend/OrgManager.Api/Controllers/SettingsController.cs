@@ -12,8 +12,8 @@ namespace OrgManager.Api.Controllers
     [Route("api/[controller]")]
     public class SettingsController : ControllerBase
     {
-        private readonly AppDbContext  _context;
-        private readonly EmailService  _emailService;
+        private readonly AppDbContext _context;
+        private readonly EmailService _emailService;
 
         public SettingsController(AppDbContext context, EmailService emailService)
         {
@@ -21,7 +21,7 @@ namespace OrgManager.Api.Controllers
             _emailService = emailService;
         }
 
-        // ── GET: api/settings/{userId} ─────────────────────────────────────
+        // ── GET: api/settings/{userId} ──────────────────────────────────────
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetSettings(string userId)
         {
@@ -30,22 +30,24 @@ namespace OrgManager.Api.Controllers
 
             if (settings == null)
             {
-                // Return defaults if no settings row yet
-                return Ok(new {
+                // Return defaults — no row yet means all notifications are default ON
+                return Ok(new
+                {
                     success = true,
-                    data    = new {
-                        id                   = (string?)null,
+                    data = new
+                    {
+                        id                  = (string?)null,
                         userId,
-                        displayName          = "",
-                        email                = "",
-                        phone                = "",
-                        bio                  = "",
-                        avatarUrl            = "",
-                        emailNotifications   = true,
-                        eventNotifications   = true,
-                        taskNotifications    = false,
-                        memberNotifications  = true,
-                        twoFactorEnabled     = false
+                        displayName         = "",
+                        email               = "",
+                        phone               = "",
+                        bio                 = "",
+                        avatarUrl           = "",
+                        emailNotifications  = true,
+                        eventNotifications  = true,
+                        taskNotifications   = false,
+                        memberNotifications = true,
+                        twoFactorEnabled    = false
                     }
                 });
             }
@@ -53,7 +55,7 @@ namespace OrgManager.Api.Controllers
             return Ok(new { success = true, data = settings });
         }
 
-        // ── PUT: api/settings/profile/{userId} ─────────────────────────────
+        // ── PUT: api/settings/profile/{userId} ──────────────────────────────
         [HttpPut("profile/{userId}")]
         public async Task<IActionResult> UpdateProfile(
             string userId, [FromBody] UpdateProfileDto dto)
@@ -63,11 +65,7 @@ namespace OrgManager.Api.Controllers
 
             if (settings == null)
             {
-                settings = new UserSettings
-                {
-                    Id     = Guid.NewGuid(),
-                    UserId = userId
-                };
+                settings = new UserSettings { Id = Guid.NewGuid(), UserId = userId };
                 _context.UserSettings.Add(settings);
             }
 
@@ -77,23 +75,39 @@ namespace OrgManager.Api.Controllers
             if (dto.Bio         != null) settings.Bio         = dto.Bio;
             if (dto.AvatarUrl   != null) settings.AvatarUrl   = dto.AvatarUrl;
 
-            // Also sync displayName back to the User table
+            // Sync changes back to the main Users table
+            User? userRow = null;
             if (Guid.TryParse(userId, out var userGuid))
             {
-                var user = await _context.Users.FindAsync(userGuid);
-                if (user != null)
+                userRow = await _context.Users.FindAsync(userGuid);
+                if (userRow != null)
                 {
-                    if (dto.DisplayName != null) user.DisplayName = dto.DisplayName;
-                    if (dto.Phone       != null) user.Phone       = dto.Phone;
-                    user.UpdatedAt = DateTime.UtcNow;
+                    if (dto.DisplayName != null) userRow.DisplayName = dto.DisplayName;
+                    if (dto.Phone       != null) userRow.Phone       = dto.Phone;
+                    userRow.UpdatedAt = DateTime.UtcNow;
                 }
             }
 
             await _context.SaveChangesAsync();
+
+            // ── Send profile-updated email if pref allows ────────────────────
+            if (userRow != null)
+            {
+                var prefs = settings; // already loaded above
+                bool emailOn = prefs.EmailNotifications;  // EmailNotifications governs account emails too
+
+                if (emailOn)
+                {
+                    _ = _emailService.SendProfileUpdatedAsync(
+                        userRow.Email,
+                        userRow.DisplayName);
+                }
+            }
+
             return Ok(new { success = true, data = settings });
         }
 
-        // ── PUT: api/settings/notifications/{userId} ───────────────────────
+        // ── PUT: api/settings/notifications/{userId} ────────────────────────
         [HttpPut("notifications/{userId}")]
         public async Task<IActionResult> UpdateNotifications(
             string userId, [FromBody] UpdateNotificationsDto dto)
@@ -103,11 +117,7 @@ namespace OrgManager.Api.Controllers
 
             if (settings == null)
             {
-                settings = new UserSettings
-                {
-                    Id     = Guid.NewGuid(),
-                    UserId = userId
-                };
+                settings = new UserSettings { Id = Guid.NewGuid(), UserId = userId };
                 _context.UserSettings.Add(settings);
             }
 
@@ -120,26 +130,23 @@ namespace OrgManager.Api.Controllers
             return Ok(new { success = true, data = settings });
         }
 
-        // ── PUT: api/settings/2fa/{userId} ─────────────────────────────────
+        // ── PUT: api/settings/2fa/{userId} ──────────────────────────────────
         [HttpPut("2fa/{userId}")]
-        public async Task<IActionResult> Toggle2FA(string userId, [FromBody] Toggle2faDto dto)
+        public async Task<IActionResult> Toggle2FA(
+            string userId, [FromBody] Toggle2faDto dto)
         {
             var settings = await _context.UserSettings
                 .FirstOrDefaultAsync(s => s.UserId == userId);
 
             if (settings == null)
             {
-                settings = new UserSettings
-                {
-                    Id     = Guid.NewGuid(),
-                    UserId = userId
-                };
+                settings = new UserSettings { Id = Guid.NewGuid(), UserId = userId };
                 _context.UserSettings.Add(settings);
             }
 
             settings.TwoFactorEnabled = dto.Enabled;
 
-            // Also sync to User table
+            // Sync to Users table
             if (Guid.TryParse(userId, out var userGuid))
             {
                 var user = await _context.Users.FindAsync(userGuid);
@@ -154,7 +161,7 @@ namespace OrgManager.Api.Controllers
             return Ok(new { success = true, data = settings });
         }
 
-        // ── POST: api/settings/password/{userId} ───────────────────────────
+        // ── POST: api/settings/password/{userId} ────────────────────────────
         [HttpPost("password/{userId}")]
         public async Task<IActionResult> ChangePassword(
             string userId, [FromBody] ChangePasswordDto dto)
@@ -181,14 +188,14 @@ namespace OrgManager.Api.Controllers
 
             await _context.SaveChangesAsync();
 
-            // ── Send password-changed confirmation email ──────────────────
+            // ── Password-changed email always fires — it's a security email ──
             _ = _emailService.SendPasswordChangedAsync(user.Email, user.DisplayName);
 
             return Ok(new { success = true, data = "Password changed successfully." });
         }
     }
 
-    // ── DTOs ───────────────────────────────────────────────────────────────
+    // ── DTOs ──────────────────────────────────────────────────────────────────
     public class UpdateProfileDto
     {
         public string? DisplayName { get; set; }

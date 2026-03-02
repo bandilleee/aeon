@@ -561,216 +561,258 @@ namespace OrgManager.Api.Services
                 WrapInTemplate($"Registration confirmed for \"{eventTitle}\".", body));
         }
 
+                // ─────────────────────────────────────────────────────────────────
+        // 10. FIRST-TIME SETUP COMPLETE — sent after set-password + 2FA done
         // ─────────────────────────────────────────────────────────────────
-// 10. FIRST-TIME SETUP COMPLETE — sent after set-password + 2FA done
-// ─────────────────────────────────────────────────────────────────
-public async Task SendAccountReadyAsync(string toEmail, string displayName)
-{
-    var firstName = displayName.Split(' ').FirstOrDefault() ?? displayName;
+        public async Task SendAccountReadyAsync(string toEmail, string displayName)
+        {
+            var firstName = displayName.Split(' ').FirstOrDefault() ?? displayName;
 
-    var body = $@"
-      <div class=""email-title"">You're All Set! 🎉</div>
-      <div class=""email-subtitle"">
-        Hi {firstName}, your Aeon account is fully set up and ready to go.
-        Welcome to the community — we're glad to have you here.
-      </div>
+            var body = $@"
+              <div class=""email-title"">You're All Set! 🎉</div>
+              <div class=""email-subtitle"">
+                Hi {firstName}, your Aeon account is fully set up and ready to go.
+                Welcome to the community — we're glad to have you here.
+              </div>
 
-      {InfoRow("🔐", "Password", "Configured")}
-      {InfoRow("✅", "Account Status", "Active")}
+              {InfoRow("🔐", "Password", "Configured")}
+              {InfoRow("✅", "Account Status", "Active")}
 
-      {DividerLine()}
+              {DividerLine()}
 
-      {PrimaryButton("http://localhost:3000/dashboard", "Go to Your Dashboard →", "btn-green")}
+              {PrimaryButton("http://localhost:3000/dashboard", "Go to Your Dashboard →", "btn-green")}
 
-      <div class=""note-box"" style=""margin-top:20px;"">
-        💡&nbsp; Explore your dashboard, check out upcoming events, and connect with other members.
-      </div>";
+              <div class=""note-box"" style=""margin-top:20px;"">
+                💡&nbsp; Explore your dashboard, check out upcoming events, and connect with other members.
+              </div>";
 
-    await SendAsync(toEmail, displayName,
-        "Your Aeon account is ready — welcome aboard!",
-        WrapInTemplate("Your Aeon account setup is complete. Let's go!", body));
-}
+            await SendAsync(toEmail, displayName,
+                "Your Aeon account is ready — welcome aboard!",
+                WrapInTemplate("Your Aeon account setup is complete. Let's go!", body));
+        }
 
-// ─────────────────────────────────────────────────────────────────
-// 11. EVENT CREATED — confirmation to the creator
-// ─────────────────────────────────────────────────────────────────
-public async Task SendEventCreatedAsync(
-    string toEmail, string displayName,
-    string eventTitle, string eventDate, bool requiresApproval)
-{
-    var firstName   = displayName.Split(' ').FirstOrDefault() ?? displayName;
-    var statusNote  = requiresApproval
-        ? "Your event is currently <span class=\"badge badge-gray\">Pending Review</span>. An admin will approve it shortly."
-        : "Your event is now <span class=\"badge badge-green\">Live</span> on the platform.";
+        // ─────────────────────────────────────────────────────────────────
+        // 11. EVENT CREATED — confirmation to the creator
+        // ─────────────────────────────────────────────────────────────────
+        public async Task SendEventCreatedAsync(
+            string toEmail, string displayName,
+            string eventTitle, string eventDate, bool requiresApproval)
+        {
+            var firstName   = displayName.Split(' ').FirstOrDefault() ?? displayName;
+            var statusNote  = requiresApproval
+                ? "Your event is currently <span class=\"badge badge-gray\">Pending Review</span>. An admin will approve it shortly."
+                : "Your event is now <span class=\"badge badge-green\">Live</span> on the platform.";
 
-    var body = $@"
-      <div class=""email-title"">Event Created ✓</div>
-      <div class=""email-subtitle"">
-        Hi {firstName}, your event has been submitted successfully.
-        {statusNote}
-      </div>
+            var body = $@"
+              <div class=""email-title"">Event Created ✓</div>
+              <div class=""email-subtitle"">
+                Hi {firstName}, your event has been submitted successfully.
+                {statusNote}
+              </div>
 
-      <div class=""card"">
-        <div class=""card-label"">Event</div>
-        <div class=""card-value"">{eventTitle}</div>
-      </div>
+              <div class=""card"">
+                <div class=""card-label"">Event</div>
+                <div class=""card-value"">{eventTitle}</div>
+              </div>
 
-      {InfoRow("📅", "Date", eventDate)}
+              {InfoRow("📅", "Date", eventDate)}
 
-      {DividerLine()}
+              {DividerLine()}
 
-      {PrimaryButton("http://localhost:3000/dashboard/events", "View Your Events →", "btn-white")}";
+              {PrimaryButton("http://localhost:3000/dashboard/events", "View Your Events →", "btn-white")}";
 
-    await SendAsync(toEmail, displayName,
-        $"Event created: \"{eventTitle}\" — Aeon",
-        WrapInTemplate($"Your Aeon event \"{eventTitle}\" was created successfully.", body));
-}
+            await SendAsync(toEmail, displayName,
+                $"Event created: \"{eventTitle}\" — Aeon",
+                WrapInTemplate($"Your Aeon event \"{eventTitle}\" was created successfully.", body));
+        }
 
-// ─────────────────────────────────────────────────────────────────
-// 12. TASK ASSIGNED — sent to the person assigned a task
-// ─────────────────────────────────────────────────────────────────
-public async Task SendTaskAssignedAsync(
-    string toEmail, string displayName,
-    string taskTitle, string assignedBy, string? dueDate, string priority)
-{
-    var firstName  = displayName.Split(' ').FirstOrDefault() ?? displayName;
-    var dueDateHtml = string.IsNullOrWhiteSpace(dueDate)
-        ? ""
-        : InfoRow("📅", "Due Date", dueDate);
+        // ─────────────────────────────────────────────────────────────────
+        // 12. TASK ASSIGNED — sent to the person assigned a task
+        // ─────────────────────────────────────────────────────────────────
+        public async Task SendTaskAssignedAsync(
+            string toEmail, string displayName,
+            string taskTitle, string assignedBy, string? dueDate, string priority)
+        {
+            var firstName  = displayName.Split(' ').FirstOrDefault() ?? displayName;
+            var dueDateHtml = string.IsNullOrWhiteSpace(dueDate)
+                ? ""
+                : InfoRow("📅", "Due Date", dueDate);
 
-    var priorityBadgeClass = priority.ToLower() switch {
-        "urgent" => "badge-red",
-        "high"   => "badge-red",
-        "medium" => "badge-blue",
-        _        => "badge-gray"
-    };
+            var priorityBadgeClass = priority.ToLower() switch {
+                "urgent" => "badge-red",
+                "high"   => "badge-red",
+                "medium" => "badge-blue",
+                _        => "badge-gray"
+            };
 
-    var body = $@"
-      <div class=""email-title"">You've Been Assigned a Task</div>
-      <div class=""email-subtitle"">
-        Hi {firstName}, {assignedBy} has assigned you a new task on Aeon.
-      </div>
+            var body = $@"
+              <div class=""email-title"">You've Been Assigned a Task</div>
+              <div class=""email-subtitle"">
+                Hi {firstName}, {assignedBy} has assigned you a new task on Aeon.
+              </div>
 
-      <div class=""card"">
-        <div class=""card-label"">Task</div>
-        <div class=""card-value"">{taskTitle}</div>
-      </div>
+              <div class=""card"">
+                <div class=""card-label"">Task</div>
+                <div class=""card-value"">{taskTitle}</div>
+              </div>
 
-      {InfoRow("👤", "Assigned By", assignedBy)}
-      {InfoRow("🚦", "Priority", $"<span class=\"badge {priorityBadgeClass}\">{priority}</span>")}
-      {dueDateHtml}
+              {InfoRow("👤", "Assigned By", assignedBy)}
+              {InfoRow("🚦", "Priority", $"<span class=\"badge {priorityBadgeClass}\">{priority}</span>")}
+              {dueDateHtml}
 
-      {DividerLine()}
+              {DividerLine()}
 
-      {PrimaryButton("http://localhost:3000/dashboard/tasks", "View Your Tasks →", "btn-white")}";
+              {PrimaryButton("http://localhost:3000/dashboard/tasks", "View Your Tasks →", "btn-white")}";
 
-    await SendAsync(toEmail, displayName,
-        $"New task assigned: \"{taskTitle}\" — Aeon",
-        WrapInTemplate($"You've been assigned a task on Aeon: \"{taskTitle}\".", body));
-}
+            await SendAsync(toEmail, displayName,
+                $"New task assigned: \"{taskTitle}\" — Aeon",
+                WrapInTemplate($"You've been assigned a task on Aeon: \"{taskTitle}\".", body));
+        }
 
-// ─────────────────────────────────────────────────────────────────
-// 13. TASK STATUS UPDATED — sent to the task creator
-// ─────────────────────────────────────────────────────────────────
-public async Task SendTaskStatusUpdatedAsync(
-    string toEmail, string displayName,
-    string taskTitle, string newStatus, string updatedBy)
-{
-    var firstName  = displayName.Split(' ').FirstOrDefault() ?? displayName;
-    var badgeClass = newStatus.ToLower() switch {
-        "completed"   => "badge-green",
-        "in_review"   => "badge-blue",
-        "in_progress" => "badge-blue",
-        _             => "badge-gray"
-    };
-    var statusLabel = newStatus.Replace("_", " ") switch {
-        "in progress" => "In Progress",
-        "in review"   => "In Review",
-        "completed"   => "Completed",
-        _             => newStatus
-    };
+        // ─────────────────────────────────────────────────────────────────
+        // 13. TASK STATUS UPDATED — sent to the task creator
+        // ─────────────────────────────────────────────────────────────────
+        public async Task SendTaskStatusUpdatedAsync(
+            string toEmail, string displayName,
+            string taskTitle, string newStatus, string updatedBy)
+        {
+            var firstName  = displayName.Split(' ').FirstOrDefault() ?? displayName;
+            var badgeClass = newStatus.ToLower() switch {
+                "completed"   => "badge-green",
+                "in_review"   => "badge-blue",
+                "in_progress" => "badge-blue",
+                _             => "badge-gray"
+            };
+            var statusLabel = newStatus.Replace("_", " ") switch {
+                "in progress" => "In Progress",
+                "in review"   => "In Review",
+                "completed"   => "Completed",
+                _             => newStatus
+            };
 
-    var body = $@"
-      <div class=""email-title"">Task Update</div>
-      <div class=""email-subtitle"">
-        Hi {firstName}, a task you're tracking has been updated.
-      </div>
+            var body = $@"
+              <div class=""email-title"">Task Update</div>
+              <div class=""email-subtitle"">
+                Hi {firstName}, a task you're tracking has been updated.
+              </div>
 
-      <div class=""card"">
-        <div class=""card-label"">Task</div>
-        <div class=""card-value"">{taskTitle}</div>
-      </div>
+              <div class=""card"">
+                <div class=""card-label"">Task</div>
+                <div class=""card-value"">{taskTitle}</div>
+              </div>
 
-      {InfoRow("🔄", "New Status", $"<span class=\"badge {badgeClass}\">{statusLabel}</span>")}
-      {InfoRow("👤", "Updated By", updatedBy)}
+              {InfoRow("🔄", "New Status", $"<span class=\"badge {badgeClass}\">{statusLabel}</span>")}
+              {InfoRow("👤", "Updated By", updatedBy)}
 
-      {DividerLine()}
+              {DividerLine()}
 
-      {PrimaryButton("http://localhost:3000/dashboard/tasks", "View Task →", "btn-white")}";
+              {PrimaryButton("http://localhost:3000/dashboard/tasks", "View Task →", "btn-white")}";
 
-    await SendAsync(toEmail, displayName,
-        $"Task update: \"{taskTitle}\" is now {statusLabel} — Aeon",
-        WrapInTemplate($"Task \"{taskTitle}\" status changed to {statusLabel}.", body));
-}
+            await SendAsync(toEmail, displayName,
+                $"Task update: \"{taskTitle}\" is now {statusLabel} — Aeon",
+                WrapInTemplate($"Task \"{taskTitle}\" status changed to {statusLabel}.", body));
+        }
 
-// ─────────────────────────────────────────────────────────────────
-// 14. PROFILE UPDATED — confirmation to the user
-// ─────────────────────────────────────────────────────────────────
-public async Task SendProfileUpdatedAsync(string toEmail, string displayName)
-{
-    var firstName = displayName.Split(' ').FirstOrDefault() ?? displayName;
+        // ─────────────────────────────────────────────────────────────────
+        // 14. PROFILE UPDATED — confirmation to the user
+        // ─────────────────────────────────────────────────────────────────
+        public async Task SendProfileUpdatedAsync(string toEmail, string displayName)
+        {
+            var firstName = displayName.Split(' ').FirstOrDefault() ?? displayName;
 
-    var body = $@"
-      <div class=""email-title"">Profile Updated ✓</div>
-      <div class=""email-subtitle"">
-        Hi {firstName}, your Aeon profile information was successfully updated.
-      </div>
+            var body = $@"
+              <div class=""email-title"">Profile Updated ✓</div>
+              <div class=""email-subtitle"">
+                Hi {firstName}, your Aeon profile information was successfully updated.
+              </div>
 
-      {InfoRow("🕐", "Updated At", $"{DateTime.UtcNow:dd MMM yyyy, HH:mm} UTC")}
+              {InfoRow("🕐", "Updated At", $"{DateTime.UtcNow:dd MMM yyyy, HH:mm} UTC")}
 
-      {DividerLine()}
+              {DividerLine()}
 
-      <div class=""note-box"">
-        🔐&nbsp; If you did not make this change, please contact your administrator immediately.
-      </div>
+              <div class=""note-box"">
+                🔐&nbsp; If you did not make this change, please contact your administrator immediately.
+              </div>
 
-      {PrimaryButton("http://localhost:3000/dashboard/settings", "Review Your Settings →", "btn-white")}";
+              {PrimaryButton("http://localhost:3000/dashboard/settings", "Review Your Settings →", "btn-white")}";
 
-    await SendAsync(toEmail, displayName,
-        "Your Aeon profile was updated",
-        WrapInTemplate("Your Aeon profile information was updated.", body));
-}
+            await SendAsync(toEmail, displayName,
+                "Your Aeon profile was updated",
+                WrapInTemplate("Your Aeon profile information was updated.", body));
+        }
 
-// ─────────────────────────────────────────────────────────────────
-// 15. EVENT REGISTRATION CANCELLED — sent to the member
-// ─────────────────────────────────────────────────────────────────
-public async Task SendEventRegistrationCancelledAsync(
-    string toEmail, string displayName, string eventTitle)
-{
-    var firstName = displayName.Split(' ').FirstOrDefault() ?? displayName;
+        // ─────────────────────────────────────────────────────────────────
+        // 15. EVENT REGISTRATION CANCELLED — sent to the member
+        // ─────────────────────────────────────────────────────────────────
+        public async Task SendEventRegistrationCancelledAsync(
+            string toEmail, string displayName, string eventTitle)
+        {
+            var firstName = displayName.Split(' ').FirstOrDefault() ?? displayName;
 
-    var body = $@"
-      <div class=""email-title"">Registration Cancelled</div>
-      <div class=""email-subtitle"">
-        Hi {firstName}, your registration for the following event has been cancelled.
-      </div>
+            var body = $@"
+              <div class=""email-title"">Registration Cancelled</div>
+              <div class=""email-subtitle"">
+                Hi {firstName}, your registration for the following event has been cancelled.
+              </div>
 
-      <div class=""card"">
-        <div class=""card-label"">Event</div>
-        <div class=""card-value"">{eventTitle}</div>
-      </div>
+              <div class=""card"">
+                <div class=""card-label"">Event</div>
+                <div class=""card-value"">{eventTitle}</div>
+              </div>
 
-      {DividerLine()}
+              {DividerLine()}
 
-      {PrimaryButton("http://localhost:3000/dashboard/events", "Browse Other Events →", "btn-white")}
+              {PrimaryButton("http://localhost:3000/dashboard/events", "Browse Other Events →", "btn-white")}
 
-      <div class=""note-box"" style=""margin-top:20px;"">
-        If you didn&rsquo;t cancel this registration, please contact your administrator.
-      </div>";
+              <div class=""note-box"" style=""margin-top:20px;"">
+                If you didn&rsquo;t cancel this registration, please contact your administrator.
+              </div>";
 
-    await SendAsync(toEmail, displayName,
-        $"Registration cancelled for \"{eventTitle}\" — Aeon",
-        WrapInTemplate($"Your registration for \"{eventTitle}\" has been cancelled.", body));
-}
+            await SendAsync(toEmail, displayName,
+                $"Registration cancelled for \"{eventTitle}\" — Aeon",
+                WrapInTemplate($"Your registration for \"{eventTitle}\" has been cancelled.", body));
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // TASK CREATED — confirmation to the creator
+        // ─────────────────────────────────────────────────────────────────
+        public async Task SendTaskCreatedAsync(
+            string toEmail, string displayName,
+            string taskTitle, string priority, string? dueDate)
+        {
+            var firstName     = displayName.Split(' ').FirstOrDefault() ?? displayName;
+            var dueDateHtml   = string.IsNullOrWhiteSpace(dueDate)
+                ? ""
+                : InfoRow("📅", "Due Date", dueDate);
+
+            var priorityBadgeClass = priority.ToLower() switch {
+                "urgent" => "badge-red",
+                "high"   => "badge-red",
+                "medium" => "badge-blue",
+                _        => "badge-gray"
+            };
+
+            var body = $@"
+              <div class=""email-title"">Task Created ✓</div>
+              <div class=""email-subtitle"">
+                Hi {firstName}, your task has been created successfully.
+              </div>
+
+              <div class=""card"">
+                <div class=""card-label"">Task</div>
+                <div class=""card-value"">{taskTitle}</div>
+              </div>
+
+              {InfoRow("🚦", "Priority", $"<span class=\"badge {priorityBadgeClass}\">{priority}</span>")}
+              {dueDateHtml}
+
+              {DividerLine()}
+
+              {PrimaryButton("http://localhost:3000/dashboard/tasks", "View Your Tasks →", "btn-white")}";
+
+            await SendAsync(toEmail, displayName,
+                $"Task created: \"{taskTitle}\" — Aeon",
+                WrapInTemplate($"Your task \"{taskTitle}\" was created on Aeon.", body));
+        }
     }
 }
