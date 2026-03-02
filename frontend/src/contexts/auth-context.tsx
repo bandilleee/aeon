@@ -142,6 +142,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         router.push("/dashboard");
       }
 
+      // Role-based redirect — AFTER the normalizedUser is set
+      if (normalizedUser.mustChangePassword) {
+        router.push("/set-password");
+      } else if (normalizedUser.role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
+
       return {
         success:                true,
         requiresPasswordChange: normalizedUser.mustChangePassword,

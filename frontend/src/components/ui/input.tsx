@@ -124,6 +124,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
 
     return (
       <Input
+        suppressHydrationWarning
         ref={ref}
         type={showPassword ? "text" : "password"}
         rightIcon={
