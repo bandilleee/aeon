@@ -126,13 +126,25 @@ IMPORTANT:
   };
 
   const handleContinue = async () => {
-    setIsLoading(true);
-    
-    // TODO: Call API to confirm 2FA setup complete
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    
+  setIsLoading(true);
+  try {
+    const token = localStorage.getItem("aeon_access_token");
+
+    // 🔴 Signal backend that onboarding is complete → triggers "account ready" email
+    if (token) {
+      await fetch("http://localhost:5073/api/auth/complete-onboarding", {
+        method:  "POST",
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+    }
+
     router.push("/dashboard");
-  };
+  } catch {
+    router.push("/dashboard");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="animate-fade-in">

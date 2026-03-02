@@ -304,6 +304,9 @@ namespace OrgManager.Api.Controllers
             if (dto.NewPassword.Length < 8)
                 return BadRequest(new { message = "New password must be at least 8 characters." });
 
+            // Was this a first-time setup? Capture before we clear the flag.
+            var wasFirstTimeSetup = user.MustChangePassword;
+
             user.PasswordHash        = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
             user.MustChangePassword  = false;
             user.PasswordLastChanged = DateTime.UtcNow;
@@ -324,7 +327,39 @@ namespace OrgManager.Api.Controllers
                 ipAddress:   HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"
             );
 
+            if (wasFirstTimeSetup)
+            {
+                // First-time setup: password-changed email fires here.
+                // The "account ready" email fires after 2FA step completes (see below).
+                _ = _emailService.SendPasswordChangedAsync(user.Email, user.DisplayName);
+            }
+            else
+            {
+                // Regular password change from settings
+                _ = _emailService.SendPasswordChangedAsync(user.Email, user.DisplayName);
+            }
+
             return Ok(new { message = "Password changed successfully." });
+        }
+
+        // ==================== COMPLETE ONBOARDING (called after 2FA step) ====================
+        [Authorize]
+        [HttpPost("complete-onboarding")]
+        public async Task<IActionResult> CompleteOnboarding()
+        {
+            var userId = User.FindFirst("id")?.Value;
+            if (userId == null) return Unauthorized();
+
+            var user = await _context.Users.FindAsync(Guid.Parse(userId));
+            if (user == null) return NotFound();
+
+            // Only send once — guard with LoginCount
+            if (user.LoginCount <= 1)
+            {
+                _ = _emailService.SendAccountReadyAsync(user.Email, user.DisplayName);
+            }
+
+            return Ok(new { message = "Onboarding complete." });
         }
 
         // ==================== HELPER: Generate JWT Token ====================

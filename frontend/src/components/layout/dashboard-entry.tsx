@@ -10,26 +10,32 @@ interface DashboardEntryProps {
 }
 
 export function DashboardEntry({ children, isAdmin = false }: DashboardEntryProps) {
-  const [showLoader, setShowLoader] = useState(true);
-  const [isFirstVisit, setIsFirstVisit] = useState(true);
+  const [showLoader, setShowLoader] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Check if user has seen the loader before in this session
-    const hasSeenLoader = sessionStorage.getItem("aeon_loader_shown");
+    // Check if this is a fresh login by looking for the flag
+    // login-form sets "aeon_just_logged_in" = "true" right after successful auth
+    const justLoggedIn = sessionStorage.getItem("aeon_just_logged_in");
 
-    if (hasSeenLoader) {
-      setShowLoader(false);
-      setIsFirstVisit(false);
+    if (justLoggedIn === "true") {
+      // Remove the flag so it doesn't show again on next page navigation
+      sessionStorage.removeItem("aeon_just_logged_in");
+      setShowLoader(true);
     }
+
+    setReady(true);
   }, []);
 
   const handleLoaderComplete = () => {
-    sessionStorage.setItem("aeon_loader_shown", "true");
     setShowLoader(false);
   };
 
-  if (showLoader && isFirstVisit) {
-    return <WelcomeLoader onComplete={handleLoaderComplete} duration={6000} />;
+  // Don't render anything until we've checked the flag (prevents flash)
+  if (!ready) return null;
+
+  if (showLoader) {
+    return <WelcomeLoader onComplete={handleLoaderComplete} duration={2500} />;
   }
 
   return (

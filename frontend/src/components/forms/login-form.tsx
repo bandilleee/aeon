@@ -39,6 +39,9 @@ export function LoginForm() {
 
       if (!result.success) {
         setError(result.error || "Login failed");
+        sessionStorage.setItem("aeon_just_logged_in", "true");
+      } else {
+      setError(result.error ?? "Login failed. Please check your credentials.");
       }
       // No router.push here — auth context handles the redirect
     } catch (err) {
