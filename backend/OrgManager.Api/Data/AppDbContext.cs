@@ -10,8 +10,6 @@ namespace OrgManager.Api.Data
         }
 
         public DbSet<User> Users { get; set; }
-        
-        // Add these two new lines!
         public DbSet<Event> Events { get; set; }
         public DbSet<TaskItem> Tasks { get; set; }
         public DbSet<TaskComment> TaskComments { get; set; }
