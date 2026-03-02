@@ -91,6 +91,7 @@ export interface AppearanceSettings {
   allowUserThemeToggle: boolean;
   // Branding
   showPoweredBy: boolean;
+  logoUrl?: string;
   customCss?: string;
   // Login page
   loginBackgroundImage?: string;

@@ -24,6 +24,7 @@ builder.Services.AddCors(options =>
 // ==================== CONTROLLERS ====================
 builder.Services.AddControllers();
 builder.Services.AddScoped<OrgManager.Api.Services.AuditService>();
+builder.Services.AddScoped<OrgManager.Api.Services.EmailService>(); // ← NEW
 
 // ==================== DATABASE ====================
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -37,13 +38,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
+            ValidateIssuer           = true,
+            ValidateAudience         = true,
+            ValidateLifetime         = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-            ValidAudience = builder.Configuration["JwtSettings:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret!))
+            ValidIssuer              = builder.Configuration["JwtSettings:Issuer"],
+            ValidAudience            = builder.Configuration["JwtSettings:Audience"],
+            IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret!))
         };
     });
 
@@ -58,10 +59,8 @@ using (var scope = app.Services.CreateScope())
 
 // ==================== MIDDLEWARE PIPELINE ====================
 app.UseCors("AllowNextJs");
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 Console.WriteLine("🚀 Aeon API is running on http://localhost:5073");
