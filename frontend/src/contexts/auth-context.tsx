@@ -152,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       return {
-        success:                true,
+        success: true,
         requiresPasswordChange: normalizedUser.mustChangePassword,
       };
     } catch (error: any) {

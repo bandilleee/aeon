@@ -28,11 +28,12 @@ export const settingsService = {
     return await apiClient.put<UserSettings>(`/api/settings/notifications/${userId}`, data);
   },
 
+  // ✅ FIXED — wraps boolean in object to match Toggle2faDto on backend
   toggle2FA: async (userId: string, isEnabled: boolean) => {
-    return await apiClient.put<UserSettings>(`/api/settings/2fa/${userId}`, isEnabled);
+    return await apiClient.put<UserSettings>(`/api/settings/2fa/${userId}`, { enabled: isEnabled });
   },
 
-  changePassword: async (userId: string, data: any) => {
+  changePassword: async (userId: string, data: { currentPassword: string; newPassword: string }) => {
     return await apiClient.post<string>(`/api/settings/password/${userId}`, data);
-  }
+  },
 };
