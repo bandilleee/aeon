@@ -174,24 +174,21 @@ export default function AuditLogsPage() {
 
           {/* Header */}
           <div className="mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight mb-1">
                   Audit Logs
                 </h1>
                 <p className="text-sm text-zinc-500">
-                  Complete history of all system activity and admin actions.
-                  {total > 0 && (
-                    <span className="ml-2 text-zinc-400 font-medium">{total} total events</span>
-                  )}
+                  Complete history of all system actions and events
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <Button
                   variant="secondary"
                   className="rounded-xl"
                   onClick={fetchLogs}
-                  disabled={isRefreshing}
+                  isLoading={isRefreshing}
                 >
                   <RefreshCw className={cn("h-4 w-4 mr-2", isRefreshing && "animate-spin")} />
                   Refresh
@@ -202,18 +199,18 @@ export default function AuditLogsPage() {
                 </Button>
               </div>
             </div>
+
+            {/* Stats Row */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+              <StatCard label="Total Events" value={stats.totalEvents} icon={Activity} color="zinc" />
+              <StatCard label="Today" value={stats.todayEvents} icon={Calendar} color="blue" />
+              <StatCard label="Critical" value={stats.criticalEvents} icon={AlertTriangle} color="red" />
+              <StatCard label="Failed" value={stats.failedEvents} icon={XCircle} color="amber" />
+            </div>
           </div>
 
-          {/* Stats Row */}
-          <div className="flex flex-wrap gap-3 mb-8">
-            <StatPill icon={Activity} label="Total Events" value={stats.totalEvents} color="violet" />
-            <StatPill icon={Clock} label="Today" value={stats.todayEvents} color="blue" />
-            <StatPill icon={AlertTriangle} label="Critical" value={stats.criticalEvents} color="red" />
-            <StatPill icon={XCircle} label="Failed" value={stats.failedEvents} color="amber" />
-            <StatPill icon={CheckCircle} label="Success" value={stats.totalEvents - stats.failedEvents} color="emerald" />
-          </div>
-
-          <div className="flex flex-col xl:flex-row gap-8">
+          {/* Main layout */}
+          <div className="flex gap-6 xl:flex-row flex-col">
 
             {/* Main Content */}
             <div className="flex-1 min-w-0">
@@ -365,12 +362,11 @@ export default function AuditLogsPage() {
                 <div className="space-y-8">
                   {Object.entries(groupedLogs).map(([date, dateLogs]) => (
                     <div key={date}>
-                      <div className="sticky top-0 z-10 flex items-center gap-4 mb-4 py-2 bg-black/80 backdrop-blur-sm">
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/80 rounded-full border border-white/5">
-                          <Calendar className="h-3.5 w-3.5 text-zinc-500" />
-                          <span className="text-xs font-medium text-zinc-400">{date}</span>
-                        </div>
-                        <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent" />
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                          {date}
+                        </span>
+                        <div className="flex-1 h-px bg-white/5" />
                         <span className="text-xs text-zinc-600">{dateLogs.length} events</span>
                       </div>
                       <div className="relative pl-6 border-l border-white/5 space-y-4 ml-3">
@@ -463,49 +459,46 @@ export default function AuditLogsPage() {
               <div className="bg-zinc-900/50 rounded-2xl border border-white/5 p-5">
                 <h3 className="text-sm font-medium text-zinc-300 mb-4 flex items-center gap-2">
                   <Users className="h-4 w-4 text-zinc-500" />
-                  Most Active Users
+                  Top Actors
                 </h3>
-                {stats.topActors.length === 0 ? (
-                  <p className="text-xs text-zinc-600 text-center py-4">No data yet</p>
-                ) : (
-                  <div className="space-y-3">
-                    {stats.topActors.slice(0, 5).map(
-                      (actor: { id: string; name: string; count: number }, index: number) => (
-                        <button
-                          key={actor.id}
-                          onClick={() =>
-                            setFilters({
-                              ...filters,
-                              actorId: filters.actorId === actor.id ? undefined : actor.id,
-                            })
-                          }
-                          className={cn(
-                            "w-full flex items-center gap-3 p-2 rounded-lg transition-colors text-left",
-                            filters.actorId === actor.id
-                              ? "bg-violet-500/10 border border-violet-500/20"
-                              : "hover:bg-white/5"
-                          )}
-                        >
-                          <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-zinc-700 to-zinc-500 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">
-                            {index + 1}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm text-zinc-300 truncate">{actor.name}</p>
-                          </div>
-                          <span className="text-xs text-zinc-500 flex-shrink-0">
-                            {actor.count}
-                          </span>
-                        </button>
-                      )
-                    )}
-                  </div>
-                )}
+                <div className="space-y-3">
+                  {stats.topActors.slice(0, 5).map((actor) => (
+                    <button
+                      key={actor.id}
+                      onClick={() =>
+                        setFilters({
+                          ...filters,
+                          actorId: filters.actorId === actor.id ? undefined : actor.id,
+                        })
+                      }
+                      className={cn(
+                        "w-full flex items-center gap-3 p-2 rounded-xl transition-colors text-left",
+                        filters.actorId === actor.id
+                          ? "bg-violet-500/10 border border-violet-500/20"
+                          : "hover:bg-white/5"
+                      )}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-zinc-700 to-zinc-500 flex items-center justify-center text-xs font-bold text-white border border-white/10 shrink-0">
+                        {actor.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .toUpperCase()
+                          .slice(0, 2)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-zinc-200 truncate">{actor.name}</p>
+                      </div>
+                      <span className="text-xs text-zinc-500 shrink-0">{actor.count}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Legend */}
               <div className="bg-zinc-900/50 rounded-2xl border border-white/5 p-5">
                 <h3 className="text-sm font-medium text-zinc-300 mb-4">Severity Legend</h3>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-blue-400" />
                     <span className="text-xs text-zinc-400">Info — Regular activities</span>
@@ -537,37 +530,32 @@ export default function AuditLogsPage() {
    SUB-COMPONENTS
    ============================================ */
 
-function StatPill({
-  icon: Icon,
+function StatCard({
   label,
   value,
+  icon: Icon,
   color,
 }: {
-  icon: React.ElementType;
   label: string;
   value: number;
-  color: "violet" | "blue" | "red" | "amber" | "emerald";
+  icon: React.ElementType;
+  color: string;
 }) {
-  const colors = {
-    violet: "from-violet-500/20 to-violet-500/5 border-violet-500/20 text-violet-400",
-    blue: "from-blue-500/20 to-blue-500/5 border-blue-500/20 text-blue-400",
-    red: "from-red-500/20 to-red-500/5 border-red-500/20 text-red-400",
-    amber: "from-amber-500/20 to-amber-500/5 border-amber-500/20 text-amber-400",
-    emerald: "from-emerald-500/20 to-emerald-500/5 border-emerald-500/20 text-emerald-400",
+  const colorMap: Record<string, string> = {
+    zinc: "bg-zinc-800/50 text-zinc-400",
+    blue: "bg-blue-500/10 text-blue-400",
+    red: "bg-red-500/10 text-red-400",
+    amber: "bg-amber-500/10 text-amber-400",
   };
-
   return (
-    <div
-      className={cn(
-        "flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gradient-to-r border",
-        colors[color]
-      )}
-    >
-      <Icon className="h-4 w-4" />
-      <div>
-        <p className="text-lg font-bold text-white">{value}</p>
-        <p className="text-[10px] uppercase tracking-wider opacity-70">{label}</p>
+    <div className="bg-zinc-900/50 rounded-2xl border border-white/5 p-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs text-zinc-500">{label}</span>
+        <div className={cn("p-1.5 rounded-lg", colorMap[color] || colorMap.zinc)}>
+          <Icon className="h-3.5 w-3.5" />
+        </div>
       </div>
+      <p className="text-2xl font-semibold text-white">{value.toLocaleString()}</p>
     </div>
   );
 }
@@ -591,18 +579,18 @@ function CategoryChip({
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-4 py-2 rounded-full border transition-all whitespace-nowrap",
+        "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all",
         active
           ? "bg-white text-black border-white"
-          : "bg-zinc-900/50 text-zinc-400 border-white/5 hover:bg-zinc-800 hover:border-white/10"
+          : "bg-zinc-900/50 text-zinc-400 border-white/10 hover:border-white/20 hover:text-zinc-200"
       )}
     >
-      {Icon && <Icon className={cn("h-3.5 w-3.5", active ? "text-black" : color)} />}
-      <span className="text-sm font-medium">{label}</span>
+      {Icon && <Icon className="h-3 w-3" />}
+      {label}
       <span
         className={cn(
-          "text-xs px-1.5 py-0.5 rounded-full",
-          active ? "bg-black/20 text-black" : "bg-white/10 text-zinc-500"
+          "px-1.5 py-0.5 rounded-full text-[10px]",
+          active ? "bg-black/20 text-black" : "bg-white/10 text-zinc-400"
         )}
       >
         {count}
@@ -626,28 +614,27 @@ function QuickFilterButton({
   active: boolean;
   onClick: () => void;
 }) {
-  const colors: Record<string, string> = {
-    red: "text-red-400 bg-red-500/10 border-red-500/20",
-    amber: "text-amber-400 bg-amber-500/10 border-amber-500/20",
-    violet: "text-violet-400 bg-violet-500/10 border-violet-500/20",
-    blue: "text-blue-400 bg-blue-500/10 border-blue-500/20",
+  const colorMap: Record<string, string> = {
+    red: "text-red-400 bg-red-500/10",
+    amber: "text-amber-400 bg-amber-500/10",
+    violet: "text-violet-400 bg-violet-500/10",
+    blue: "text-blue-400 bg-blue-500/10",
   };
-
   return (
     <button
       onClick={onClick}
       className={cn(
-        "w-full flex items-center justify-between p-3 rounded-xl border transition-all",
-        active ? colors[color] : "bg-white/5 border-white/5 hover:bg-white/10"
+        "w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left",
+        active
+          ? "bg-white/5 border-white/10"
+          : "border-transparent hover:bg-white/5 hover:border-white/5"
       )}
     >
-      <div className="flex items-center gap-2">
-        <Icon className={cn("h-4 w-4", active ? colors[color].split(" ")[0] : "text-zinc-500")} />
-        <span className={cn("text-sm", active ? "text-white" : "text-zinc-400")}>{label}</span>
+      <div className={cn("p-1.5 rounded-lg", colorMap[color] || "text-zinc-400 bg-zinc-800")}>
+        <Icon className="h-3.5 w-3.5" />
       </div>
-      <span className={cn("text-sm font-medium", active ? "text-white" : "text-zinc-500")}>
-        {count}
-      </span>
+      <span className="flex-1 text-sm text-zinc-300">{label}</span>
+      <span className="text-xs text-zinc-500">{count}</span>
     </button>
   );
 }
@@ -669,7 +656,7 @@ function FilterSelect({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-zinc-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:ring-1 focus:ring-white/20"
+        className="w-full bg-zinc-800 border border-white/10 text-sm text-zinc-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-white/20"
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -680,6 +667,10 @@ function FilterSelect({
     </div>
   );
 }
+
+/* ============================================
+   LOG ENTRY (FIXED: no nested <button>)
+   ============================================ */
 
 function LogEntry({
   log,
@@ -722,8 +713,19 @@ function LogEntry({
             : "border-white/5 hover:border-white/10"
         )}
       >
-        {/* Main row */}
-        <button className="w-full text-left p-4" onClick={onToggle}>
+        {/* ✅ FIX: outer <button> → <div role="button"> to prevent nested button hydration error */}
+        <div
+          role="button"
+          tabIndex={0}
+          className="w-full text-left p-4 cursor-pointer"
+          onClick={onToggle}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onToggle();
+            }
+          }}
+        >
           <div className="flex items-start gap-3">
             <div
               className={cn(
@@ -781,6 +783,7 @@ function LogEntry({
             </div>
 
             <div className="shrink-0 flex items-center gap-2">
+              {/* ✅ This <button> is now valid — no longer nested inside another <button> */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -799,7 +802,7 @@ function LogEntry({
               />
             </div>
           </div>
-        </button>
+        </div>
 
         {/* Expanded details */}
         {isExpanded && (

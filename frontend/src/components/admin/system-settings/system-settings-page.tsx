@@ -281,11 +281,22 @@ function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (
   return (
     <button
       type="button"
+      role="switch"
+      aria-checked={checked}
       onClick={() => !disabled && onChange(!checked)}
       disabled={disabled}
-      className={cn("w-11 h-6 rounded-full transition-colors relative", checked ? "bg-emerald-500" : "bg-zinc-700", disabled && "opacity-50 cursor-not-allowed")}
+      className={cn(
+        "w-11 h-6 rounded-full transition-colors relative focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30",
+        checked ? "bg-emerald-500" : "bg-zinc-700",
+        disabled && "opacity-50 cursor-not-allowed"
+      )}
     >
-      <span className={cn("absolute top-1 w-4 h-4 bg-white rounded-full transition-transform", checked ? "translate-x-6" : "translate-x-1")} />
+      <span
+        className={cn(
+          "absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200",
+          checked ? "translate-x-5" : "translate-x-1"  // ← was translate-x-6
+        )}
+      />
     </button>
   );
 }
